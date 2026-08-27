@@ -111,9 +111,9 @@ The AzureRM provider uses the existing Azure CLI session and supports `ARM_SUBSC
 
 Local Phase 0 validation has successfully demonstrated the Azure CLI authenticated context, Terraform initialization and configuration validation, AzureRM provider connectivity, a successful `azurerm_client_config` lookup, and zero real infrastructure changes. `scripts/validate.ps1` runs the same non-destructive checks and never calls `terraform apply`.
 
-## Phase 2 - Planned Vulnerable Lab Implementation
+## Phase 2 - Verified Vulnerable Lab Implementation
 
-Phase 2 adds Terraform configuration for a deliberately vulnerable, lab-only workload identity. The future deployment contains a temporary client password, an excessive Contributor role limited to the workload-lab resource group, synthetic blob data, and a project-owned negative-control canary with no workload service-principal access. It uses only a minimal Standard LRS storage account and tiny synthetic blob; no virtual machines, premium services, or diagnostic workspaces are planned. Runtime deployment and validation are pending owner/operator review. The credential is temporary, must be treated as sensitive in Terraform state, and is removed in Phase 4.
+Phase 2 deployed the deliberately vulnerable, lab-only workload identity and completed owner-context validation successfully. The verified configuration includes a temporary client password, an excessive Contributor role limited to the workload-lab resource group, synthetic blob data, and a project-owned negative-control canary with no workload service-principal access. It uses only a minimal Standard LRS storage account and tiny synthetic blob; no virtual machines, premium services, or diagnostic workspaces are used. The credential is temporary, must be treated as sensitive in Terraform state, and is removed in Phase 4. Phase 3 attack tests have not started.
 
 ## Security / Credential Handling
 
@@ -121,7 +121,7 @@ Never commit `ARM_CLIENT_SECRET`, service principal passwords, Azure access toke
 
 ## Evidence Strategy
 
-Only verified outputs from controlled validation will be retained in `docs/evidence/`. Phase 0 records the validated outcome without screenshots, identifiers, credentials, tokens, or deployment evidence.
+Only verified outputs from controlled validation are retained in `docs/evidence/`. Evidence excludes screenshots, identifiers, credentials, tokens, Terraform state, and deployment-sensitive values.
 
 ## Cost-Control Strategy
 
@@ -132,7 +132,6 @@ Phase 0 creates no Azure resources. Later resources will be deployed only during
 ```text
 Phase 0: Complete
 Phase 1: Complete
-Phase 2: In Progress
-Azure resources deployed: 0
-Billable resources deployed: 0
+Phase 2: Complete
+Phase 3: Not Started
 ```
