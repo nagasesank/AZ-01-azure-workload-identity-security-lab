@@ -2,7 +2,7 @@
 
 ## Security Objective
 
-This lab will show how a long-lived workload credential and deliberately excessive Azure RBAC can be abused, then replace that design with GitHub OIDC and least-privilege authorization. Every future experiment is constrained to a dedicated AZ-01 resource group and synthetic data.
+This lab will show how a long-lived workload credential and deliberately excessive Azure RBAC can be abused, then replace that design with GitHub OIDC and least-privilege authorization. Every future experiment is constrained to project-owned AZ-01 resource groups and synthetic data.
 
 No infrastructure described here exists yet.
 
@@ -18,6 +18,21 @@ flowchart TD
 ```
 
 The intentional weakness is a temporary client secret used by GitHub Actions and an RBAC role that is excessive for the workload, but only within the dedicated lab resource group. It is not subscription-wide Owner, subscription-wide Contributor, Global Administrator, Privileged Role Administrator, or unrestricted tenant access.
+
+## Project-Owned Resource-Group Boundaries
+
+```mermaid
+flowchart LR
+    P[AZ-01 Project] --> W[rg-az01-workload-lab]
+    W --> WR[Vulnerable workload resources]
+    W --> S[Storage and synthetic test data]
+    W --> X[Deliberately excessive workload identity permissions]
+    P --> N[rg-az01-negative-control]
+    N --> C[Benign project-owned canary resource]
+    SP[Compromised workload service principal] -. no role assignment .-> N
+```
+
+`rg-az01-workload-lab` is the future authorization boundary for the compromised workload identity. `rg-az01-negative-control` is also AZ-01-owned project infrastructure, but contains only a benign canary resource and has no workload service-principal role assignment. Exact final Azure names are implementation details; this two-boundary design is mandatory.
 
 ## Planned Remediated State
 
@@ -38,7 +53,7 @@ Authentication establishes the identity of the service principal. Authorization 
 
 ## Azure Control-Plane Flow
 
-Azure Resource Manager evaluates the service principal's Azure RBAC assignment before allowing management-plane operations on resources in the dedicated AZ-01 resource group. Future tests may demonstrate an intentionally excessive, but resource-group-scoped, action and then verify that the narrowed role denies it after remediation.
+Azure Resource Manager evaluates the service principal's Azure RBAC assignment before allowing management-plane operations on resources in `rg-az01-workload-lab`. Future tests may demonstrate an intentionally excessive, but resource-group-scoped, action and then verify that the narrowed role denies it after remediation. The same identity has no role assignment on `rg-az01-negative-control`; the benign canary is used only for a harmless authorization-negative test.
 
 ## Azure Data-Plane Flow
 
@@ -48,11 +63,11 @@ Data-plane access is distinct from Azure Resource Manager control-plane access. 
 
 - GitHub to Microsoft Entra: GitHub workflow identity and OIDC or secret-based authentication cross into Microsoft Entra.
 - Microsoft Entra to Azure Resource Manager: an issued token crosses from identity authentication to Azure authorization.
-- Azure Resource Manager to target resources: management-plane permissions are evaluated against the dedicated resource group.
+- Azure Resource Manager to target resources: management-plane permissions are evaluated separately for the workload-lab and negative-control resource groups.
 - Management plane to data plane: resource administration and data access require separate authorization decisions.
 - Local administrator/test operator to Azure: local Azure CLI use is limited to controlled setup and validation.
 
-The dedicated AZ-01 resource group is the blast-radius boundary. Future attack tests must not enumerate, modify, or access resources outside it.
+Both AZ-01 resource groups are project infrastructure, but only `rg-az01-workload-lab` is inside the compromised identity's authorization boundary. `rg-az01-negative-control` proves that containment with a known benign canary. Future attack tests must not enumerate, read, modify, or attack arbitrary resources elsewhere in the subscription.
 
 ## Assumptions
 
@@ -63,4 +78,4 @@ The dedicated AZ-01 resource group is the blast-radius boundary. Future attack t
 
 ## Future Terraform Ownership
 
-Terraform will remain the source of truth for the future resource group, storage account, test data support, Entra workload identity configuration, federated credential, and RBAC assignments. Azure Portal use is limited to visual verification and evidence; it is not a configuration path.
+Terraform will remain the source of truth for all future configuration. The planned `hashicorp/azuread` provider owns Microsoft Entra identity objects: the Entra application, service principal, temporary application/client password for the vulnerable phase, and federated identity credential. The planned `hashicorp/azurerm` provider owns Azure resource-plane objects: resource groups, storage resources, Azure RBAC role assignments, and other Azure resources. Azure Portal use is limited to visual verification and evidence; it is not a configuration path. This Phase 1 documentation does not add the `azuread` provider to Terraform configuration.
