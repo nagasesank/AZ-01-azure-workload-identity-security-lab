@@ -125,7 +125,18 @@ $roleAssignmentsJson = az role assignment list `
     --fill-principal-name false `
     --output json
 Assert-NativeSuccess -Operation "Vulnerable service-principal role-assignment lookup"
-$roleAssignments = @($roleAssignmentsJson | ConvertFrom-Json)
+
+# Windows PowerShell can return a top-level JSON array as one array object.
+# Decode first and explicitly enumerate it to avoid a nested assignment collection.
+$decodedRoleAssignments = $roleAssignmentsJson | ConvertFrom-Json
+$roleAssignments = @()
+foreach ($assignment in $decodedRoleAssignments) {
+    $roleAssignments += $assignment
+}
+
+if ($roleAssignments.Count -ne 2) {
+    throw "The vulnerable service principal must have exactly two direct Azure RBAC assignments."
+}
 
 $contributorAssignments = @($roleAssignments | Where-Object {
     $_.roleDefinitionName -eq "Contributor" -and $_.scope -ceq $workloadGroupId
@@ -146,10 +157,6 @@ $negativeControlAssignments = @($roleAssignments | Where-Object {
 })
 if ($negativeControlAssignments.Count -ne 0) {
     throw "The vulnerable service principal has an unauthorized role assignment in the negative-control boundary."
-}
-
-if ($roleAssignments.Count -ne 2) {
-    throw "The vulnerable service principal has unexpected direct Azure RBAC assignments."
 }
 
 Write-Host "Phase 2 owner-context validation completed successfully."
