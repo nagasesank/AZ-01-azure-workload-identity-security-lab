@@ -95,7 +95,7 @@ cd terraform
 terraform init
 terraform fmt -check
 terraform validate
-terraform plan
+terraform plan -input=false
 ```
 
 The AzureRM provider uses the existing Azure CLI session and supports `ARM_SUBSCRIPTION_ID` and `ARM_TENANT_ID`. A successful Phase 0 plan should report no infrastructure changes:
@@ -106,7 +106,7 @@ The AzureRM provider uses the existing Azure CLI session and supports `ARM_SUBSC
 0 to destroy
 ```
 
-This result has not yet been observed or recorded for this repository. `scripts/validate.ps1` runs the same non-destructive checks and never calls `terraform apply`.
+Local Phase 0 validation has successfully demonstrated the Azure CLI authenticated context, Terraform initialization and configuration validation, AzureRM provider connectivity, a successful `azurerm_client_config` lookup, and zero real infrastructure changes. `scripts/validate.ps1` runs the same non-destructive checks and never calls `terraform apply`.
 
 ## Security / Credential Handling
 
@@ -114,7 +114,7 @@ Never commit `ARM_CLIENT_SECRET`, service principal passwords, Azure access toke
 
 ## Evidence Strategy
 
-Only verified outputs from controlled validation will be retained in `docs/evidence/`. No screenshots, test results, deployment evidence, or Azure connectivity claims are included in Phase 0.
+Only verified outputs from controlled validation will be retained in `docs/evidence/`. Phase 0 records the validated outcome without screenshots, identifiers, credentials, tokens, or deployment evidence.
 
 ## Cost-Control Strategy
 
@@ -123,7 +123,8 @@ Phase 0 creates no Azure resources. Later resources will be deployed only during
 ## Current Project Status
 
 ```text
-Phase 0 - Repository/Foundation: In Progress
+Phase 0 - Repository/Foundation: Validated
+Azure connectivity: Validated locally
 Azure resources deployed: 0
 Billable resources deployed: 0
 ```

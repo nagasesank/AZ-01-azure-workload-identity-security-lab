@@ -16,11 +16,16 @@ function Require-Command {
 Require-Command -Name "az"
 Require-Command -Name "terraform"
 
+$accountJson = az account show --output json
+if ($LASTEXITCODE -ne 0) {
+    throw "Azure CLI returned a non-zero exit code while reading the active account. Run 'az login' and retry."
+}
+
 try {
-    $account = az account show --output json | ConvertFrom-Json
+    $account = $accountJson | ConvertFrom-Json
 }
 catch {
-    throw "Azure CLI authentication was not found. Run 'az login' and retry."
+    throw "Azure CLI did not return a readable active account. Run 'az login' and retry."
 }
 
 if (-not $account -or -not $account.id -or -not $account.tenantId) {
@@ -48,10 +53,31 @@ if ($env:ARM_TENANT_ID -cne $account.tenantId) {
 
 Push-Location $terraformDirectory
 try {
+    Write-Host "[1/4] Checking Terraform formatting..."
     terraform fmt -check
+    if ($LASTEXITCODE -ne 0) {
+        throw "Terraform formatting check failed."
+    }
+
+    Write-Host "[2/4] Initializing Terraform..."
     terraform init
+    if ($LASTEXITCODE -ne 0) {
+        throw "Terraform initialization failed."
+    }
+
+    Write-Host "[3/4] Validating Terraform configuration..."
     terraform validate
-    terraform plan
+    if ($LASTEXITCODE -ne 0) {
+        throw "Terraform configuration validation failed."
+    }
+
+    Write-Host "[4/4] Running zero-resource Terraform plan..."
+    terraform plan -input=false
+    if ($LASTEXITCODE -ne 0) {
+        throw "Terraform plan failed."
+    }
+
+    Write-Host "Phase 0 validation completed successfully."
 }
 finally {
     Pop-Location
