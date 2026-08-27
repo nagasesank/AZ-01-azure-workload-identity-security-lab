@@ -111,13 +111,17 @@ The AzureRM provider uses the existing Azure CLI session and supports `ARM_SUBSC
 
 Local Phase 0 validation has successfully demonstrated the Azure CLI authenticated context, Terraform initialization and configuration validation, AzureRM provider connectivity, a successful `azurerm_client_config` lookup, and zero real infrastructure changes. `scripts/validate.ps1` runs the same non-destructive checks and never calls `terraform apply`.
 
+## Phase 2 - Verified Vulnerable Lab Implementation
+
+Phase 2 deployed the deliberately vulnerable, lab-only workload identity and completed owner-context validation successfully. The verified configuration includes a temporary client password, an excessive Contributor role limited to the workload-lab resource group, synthetic blob data, and a project-owned negative-control canary with no workload service-principal access. It uses only a minimal Standard LRS storage account and tiny synthetic blob; no virtual machines, premium services, or diagnostic workspaces are used. The credential is temporary, must be treated as sensitive in Terraform state, and is removed in Phase 4. Phase 3 attack tests have not started.
+
 ## Security / Credential Handling
 
 Never commit `ARM_CLIENT_SECRET`, service principal passwords, Azure access tokens, GitHub tokens, Azure CLI token/cache files, real `.env` files, or Terraform state files. Do not commit subscription IDs, tenant IDs, client IDs, object IDs, credentials, or other secret material. Commit `.terraform.lock.hcl` so provider versions are reproducible.
 
 ## Evidence Strategy
 
-Only verified outputs from controlled validation will be retained in `docs/evidence/`. Phase 0 records the validated outcome without screenshots, identifiers, credentials, tokens, or deployment evidence.
+Only verified outputs from controlled validation are retained in `docs/evidence/`. Public evidence may include sanitized or redacted screenshots, but must exclude credentials, tokens, Terraform state, sensitive values, and unnecessary environment identifiers.
 
 ## Cost-Control Strategy
 
@@ -127,7 +131,7 @@ Phase 0 creates no Azure resources. Later resources will be deployed only during
 
 ```text
 Phase 0: Complete
-Phase 1: In Progress
-Azure resources deployed: 0
-Billable resources deployed: 0
+Phase 1: Complete
+Phase 2: Complete
+Phase 3: Not Started
 ```
