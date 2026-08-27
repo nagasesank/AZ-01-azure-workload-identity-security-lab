@@ -1,4 +1,6 @@
-# No Terraform variables are required for Phase 0.
+# Phase 2 requires only a deployment location.
 # Local authentication uses the active Azure CLI session from `az login`.
-# The Phase 0 workflow requires ARM_SUBSCRIPTION_ID and ARM_TENANT_ID to match that active account.
+# ARM_SUBSCRIPTION_ID and ARM_TENANT_ID must match that active account.
 # Do not place real identifiers or credentials in this example or any committed tfvars file.
+
+# location = "eastus"
