@@ -42,6 +42,11 @@ output "synthetic_data_container_name" {
   value       = azurerm_storage_container.synthetic_data.name
 }
 
+output "synthetic_data_blob_name" {
+  description = "Name of the synthetic blob used for future data-plane validation."
+  value       = azurerm_storage_blob.synthetic_data.name
+}
+
 output "negative_control_canary_name" {
   description = "Name of the project-owned canary with no workload identity access."
   value       = azurerm_user_assigned_identity.negative_control_canary.name

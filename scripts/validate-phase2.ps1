@@ -68,6 +68,8 @@ try {
     $workloadResourceGroup = Get-NonSecretTerraformOutput -Name "workload_resource_group_name"
     $negativeControlGroup = Get-NonSecretTerraformOutput -Name "negative_control_resource_group_name"
     $storageAccount = Get-NonSecretTerraformOutput -Name "workload_storage_account_name"
+    $syntheticDataContainer = Get-NonSecretTerraformOutput -Name "synthetic_data_container_name"
+    $syntheticDataBlob = Get-NonSecretTerraformOutput -Name "synthetic_data_blob_name"
     $negativeControlCanary = Get-NonSecretTerraformOutput -Name "negative_control_canary_name"
     $applicationClientId = Get-NonSecretTerraformOutput -Name "vulnerable_application_client_id"
 }
@@ -83,6 +85,21 @@ Assert-NativeSuccess -Operation "Negative-control resource-group lookup"
 
 $storageAccountId = az storage account show --name $storageAccount --resource-group $workloadResourceGroup --query id --output tsv
 Assert-NativeSuccess -Operation "Workload storage-account lookup"
+
+$syntheticContainer = az storage container show `
+    --account-name $storageAccount `
+    --name $syntheticDataContainer `
+    --auth-mode login `
+    --output json
+Assert-NativeSuccess -Operation "Synthetic-data container lookup"
+
+$syntheticBlob = az storage blob show `
+    --account-name $storageAccount `
+    --container-name $syntheticDataContainer `
+    --name $syntheticDataBlob `
+    --auth-mode login `
+    --output json
+Assert-NativeSuccess -Operation "Synthetic-data blob lookup"
 
 $canary = az identity show --name $negativeControlCanary --resource-group $negativeControlGroup --output json
 Assert-NativeSuccess -Operation "Negative-control canary lookup"
