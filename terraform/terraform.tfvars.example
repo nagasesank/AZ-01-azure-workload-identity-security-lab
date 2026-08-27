@@ -1,0 +1,4 @@
+# No Terraform variables are required for Phase 0.
+# Use `az login` for local authentication.
+# Optionally set ARM_SUBSCRIPTION_ID and ARM_TENANT_ID in your shell environment.
+
