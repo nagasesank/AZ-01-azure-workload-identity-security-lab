@@ -51,11 +51,14 @@ Unauthorized actions denied
 
 ## Project Phases
 
-1. Phase 0: Repository foundation and local Terraform connectivity validation.
-2. Phase 1: Architecture, threat model, and controlled attack-path design.
-3. Phase 2: Terraform-managed lab infrastructure for controlled validation.
-4. Phase 3: Attack simulation, remediation, and evidence collection.
-5. Phase 4: Detection, hardening guidance, cleanup, and retrospective documentation.
+1. Phase 0: Repository and Azure connectivity.
+2. Phase 1: Architecture and threat modeling.
+3. Phase 2: Vulnerable identity infrastructure.
+4. Phase 3: Credential-compromise attack validation.
+5. Phase 4: GitHub OIDC and least-privilege remediation.
+6. Phase 5: Re-attack and security validation.
+7. Phase 6: CI/CD security controls.
+8. Phase 7: Evidence, cleanup, and retrospective.
 
 ## Technology Stack
 
@@ -123,8 +126,8 @@ Phase 0 creates no Azure resources. Later resources will be deployed only during
 ## Current Project Status
 
 ```text
-Phase 0 - Repository/Foundation: Validated
-Azure connectivity: Validated locally
+Phase 0: Complete
+Phase 1: In Progress
 Azure resources deployed: 0
 Billable resources deployed: 0
 ```
