@@ -30,9 +30,9 @@ resource "azurerm_storage_container" "synthetic_data" {
 }
 
 resource "azurerm_storage_blob" "synthetic_data" {
-  name                   = "az01-synthetic-data.txt"
-  storage_account_name   = azurerm_storage_account.workload_lab.name
-  storage_container_name = azurerm_storage_container.synthetic_data.name
-  type                   = "Block"
-  source_content         = "AZ-01 synthetic workload identity security test data. No production, personal, customer, healthcare, or confidential data."
+  name                 = "az01-synthetic-data.txt"
+  storage_account_name = azurerm_storage_account.workload_lab.name
+  storage_container_id = azurerm_storage_container.synthetic_data.id
+  type                 = "Block"
+  source_content       = "AZ-01 synthetic workload identity security test data. No production, personal, customer, healthcare, or confidential data."
 }
