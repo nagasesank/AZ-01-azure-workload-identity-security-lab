@@ -121,7 +121,7 @@ Never commit `ARM_CLIENT_SECRET`, service principal passwords, Azure access toke
 
 ## Evidence Strategy
 
-Only verified outputs from controlled validation are retained in `docs/evidence/`. Evidence excludes screenshots, identifiers, credentials, tokens, Terraform state, and deployment-sensitive values.
+Only verified outputs from controlled validation are retained in `docs/evidence/`. Public evidence may include sanitized or redacted screenshots, but must exclude credentials, tokens, Terraform state, sensitive values, and unnecessary environment identifiers.
 
 ## Cost-Control Strategy
 
