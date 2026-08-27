@@ -8,6 +8,8 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+.terraformrc
+terraform.rc
 .env
 .env.*
 *.env
@@ -25,4 +27,3 @@ override.tf.json
 *.secrets
 *.credentials
 local.settings.json
-
