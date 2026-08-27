@@ -38,6 +38,14 @@ if ([string]::IsNullOrWhiteSpace($env:ARM_TENANT_ID)) {
     throw "ARM_TENANT_ID is not set. Set it from 'az account show --query tenantId -o tsv' and retry."
 }
 
+if ($env:ARM_SUBSCRIPTION_ID -cne $account.id) {
+    throw "ARM_SUBSCRIPTION_ID does not match the active Azure CLI subscription. Update it from the active Azure CLI account and retry."
+}
+
+if ($env:ARM_TENANT_ID -cne $account.tenantId) {
+    throw "ARM_TENANT_ID does not match the active Azure CLI tenant. Update it from the active Azure CLI account and retry."
+}
+
 Push-Location $terraformDirectory
 try {
     terraform fmt -check
