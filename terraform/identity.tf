@@ -11,7 +11,12 @@ resource "azuread_service_principal" "vulnerable_workload" {
 
 # This intentionally vulnerable credential is limited to the future controlled lab phase.
 resource "azuread_application_password" "vulnerable_workload" {
-  application_id    = azuread_application.vulnerable_workload.id
-  display_name      = "az01-vulnerable-phase-temporary-password"
-  end_date_relative = "168h"
+  application_id = azuread_application.vulnerable_workload.id
+  display_name   = "az01-vulnerable-phase-temporary-password"
+  end_date       = timeadd(timestamp(), "168h")
+
+  # Preserve the initial seven-day expiry instead of extending it on later plans.
+  lifecycle {
+    ignore_changes = [end_date]
+  }
 }
