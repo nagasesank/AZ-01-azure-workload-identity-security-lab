@@ -87,31 +87,40 @@ Assert-NativeSuccess -Operation "Workload storage-account lookup"
 $canary = az identity show --name $negativeControlCanary --resource-group $negativeControlGroup --output json
 Assert-NativeSuccess -Operation "Negative-control canary lookup"
 
-$servicePrincipal = az ad sp show --id $applicationClientId --output json
+$servicePrincipalJson = az ad sp show --id $applicationClientId --output json
 Assert-NativeSuccess -Operation "Vulnerable service-principal lookup"
 
-$roleAssignmentsJson = az role assignment list --assignee $applicationClientId --all --output json
+try {
+    $servicePrincipal = $servicePrincipalJson | ConvertFrom-Json
+}
+catch {
+    throw "Azure CLI did not return a readable vulnerable service principal."
+}
+
+if ([string]::IsNullOrWhiteSpace($servicePrincipal.id)) {
+    throw "Azure CLI did not return the vulnerable service-principal object ID."
+}
+
+$servicePrincipalObjectId = $servicePrincipal.id
+$roleAssignmentsJson = az role assignment list `
+    --assignee-object-id $servicePrincipalObjectId `
+    --all `
+    --fill-principal-name false `
+    --output json
 Assert-NativeSuccess -Operation "Vulnerable service-principal role-assignment lookup"
 $roleAssignments = @($roleAssignmentsJson | ConvertFrom-Json)
 
-$outsideWorkloadBoundary = @($roleAssignments | Where-Object {
-    $_.scope -ine $workloadGroupId -and $_.scope -inotlike "$workloadGroupId/*"
-})
-if ($outsideWorkloadBoundary.Count -ne 0) {
-    throw "The vulnerable service principal has a role assignment outside the workload-lab boundary."
-}
-
 $contributorAssignments = @($roleAssignments | Where-Object {
-    $_.roleDefinitionName -eq "Contributor"
+    $_.roleDefinitionName -eq "Contributor" -and $_.scope -ceq $workloadGroupId
 })
-if ($contributorAssignments.Count -ne 1 -or $contributorAssignments[0].scope -cne $workloadGroupId) {
+if ($contributorAssignments.Count -ne 1) {
     throw "Contributor must exist exactly once and only at the workload-lab resource-group scope."
 }
 
 $blobDataAssignments = @($roleAssignments | Where-Object {
-    $_.roleDefinitionName -eq "Storage Blob Data Contributor"
+    $_.roleDefinitionName -eq "Storage Blob Data Contributor" -and $_.scope -ceq $storageAccountId
 })
-if ($blobDataAssignments.Count -ne 1 -or $blobDataAssignments[0].scope -cne $storageAccountId) {
+if ($blobDataAssignments.Count -ne 1) {
     throw "Storage Blob Data Contributor must exist exactly once and only at the workload storage-account scope."
 }
 
@@ -120,6 +129,10 @@ $negativeControlAssignments = @($roleAssignments | Where-Object {
 })
 if ($negativeControlAssignments.Count -ne 0) {
     throw "The vulnerable service principal has an unauthorized role assignment in the negative-control boundary."
+}
+
+if ($roleAssignments.Count -ne 2) {
+    throw "The vulnerable service principal has unexpected direct Azure RBAC assignments."
 }
 
 Write-Host "Phase 2 owner-context validation completed successfully."
