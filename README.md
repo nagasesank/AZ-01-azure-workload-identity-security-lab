@@ -113,7 +113,11 @@ Local Phase 0 validation has successfully demonstrated the Azure CLI authenticat
 
 ## Phase 2 - Verified Vulnerable Lab Implementation
 
-Phase 2 deployed the deliberately vulnerable, lab-only workload identity and completed owner-context validation successfully. The verified configuration includes a temporary client password, an excessive Contributor role limited to the workload-lab resource group, synthetic blob data, and a project-owned negative-control canary with no workload service-principal access. It uses only a minimal Standard LRS storage account and tiny synthetic blob; no virtual machines, premium services, or diagnostic workspaces are used. The credential is temporary, must be treated as sensitive in Terraform state, and is removed in Phase 4. Phase 3 attack tests have not started.
+Phase 2 deployed the deliberately vulnerable, lab-only workload identity and completed owner-context validation successfully. The verified configuration includes a temporary client password, an excessive Contributor role limited to the workload-lab resource group, synthetic blob data, and a project-owned negative-control canary with no workload service-principal access. It used only a minimal Standard LRS storage account and tiny synthetic blob; no virtual machines, premium services, or diagnostic workspaces were used. The credential was temporary and treated as sensitive in Terraform state.
+
+## Phase 3 - Verified Attack Validation
+
+Phase 3 controlled attack validation completed successfully. AT-01 through AT-05 verified exposed-credential authentication, workload-bound enumeration, harmless and restored management-plane mutation, synthetic-data access, and negative-control containment. The Azure lab resources were intentionally destroyed after evidence capture for cost control. Phase 4 remediation has not started.
 
 ## Security / Credential Handling
 
@@ -133,5 +137,6 @@ Phase 0 creates no Azure resources. Later resources will be deployed only during
 Phase 0: Complete
 Phase 1: Complete
 Phase 2: Complete
-Phase 3: Not Started
+Phase 3: Complete
+Phase 4: Not Started
 ```
