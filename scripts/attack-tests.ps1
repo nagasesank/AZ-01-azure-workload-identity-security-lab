@@ -57,6 +57,21 @@ function Get-ResourceGroupTags {
     }
 }
 
+function Get-ResourceGroupId {
+    param([Parameter(Mandatory = $true)][string]$ResourceGroup)
+
+    Invoke-AzSilently -Operation "Workload resource-group ID lookup" -Arguments @(
+        "group", "show", "--name", $ResourceGroup, "--query", "id", "--output", "tsv"
+    )
+
+    $resourceGroupId = ($script:LastAzOutput | Out-String).Trim()
+    if ([string]::IsNullOrWhiteSpace($resourceGroupId)) {
+        throw "Workload resource-group ID could not be verified."
+    }
+
+    return $resourceGroupId
+}
+
 function Test-AT01 {
     Write-Host "[PASS] AT-01: vulnerable service-principal credential authenticated successfully."
 }
@@ -77,6 +92,7 @@ function Test-AT03 {
 
     $probeTagName = "az01_phase3_probe"
     $probeTagValue = "phase3-temporary-probe"
+    $workloadResourceGroupId = Get-ResourceGroupId -ResourceGroup $WorkloadResourceGroup
     $originalTags = Get-ResourceGroupTags -ResourceGroup $WorkloadResourceGroup
     $originalTag = $originalTags.PSObject.Properties[$probeTagName]
     $hadOriginalTag = $null -ne $originalTag
@@ -102,12 +118,14 @@ function Test-AT03 {
         if ($mutationStarted) {
             if ($hadOriginalTag) {
                 Invoke-AzSilently -Operation "Management-plane probe restoration" -Arguments @(
-                    "group", "update", "--name", $WorkloadResourceGroup, "--set", "tags.$probeTagName=$originalValue", "--output", "none"
+                    "tag", "update", "--resource-id", $workloadResourceGroupId, "--operation", "Merge",
+                    "--tags", "$probeTagName=$originalValue", "--output", "none"
                 )
             }
             else {
                 Invoke-AzSilently -Operation "Management-plane probe restoration" -Arguments @(
-                    "group", "update", "--name", $WorkloadResourceGroup, "--remove", "tags.$probeTagName", "--output", "none"
+                    "tag", "update", "--resource-id", $workloadResourceGroupId, "--operation", "Delete",
+                    "--tags", $probeTagName, "--output", "none"
                 )
             }
 
