@@ -197,8 +197,17 @@ function Test-AT05 {
         throw "AT-05 owner-context preflight did not complete."
     }
 
-    $denialOutput = & az identity show --resource-group $NegativeControlResourceGroup --name $CanaryName --output json 2>&1
-    $exitCode = $LASTEXITCODE
+    # This native command is expected to fail for a correctly contained attacker.
+    # Windows PowerShell can otherwise promote captured native stderr to a terminating error.
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $denialOutput = & az identity show --resource-group $NegativeControlResourceGroup --name $CanaryName --output json 2>&1
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
 
     if ($exitCode -eq 0) {
         throw "AT-05 failed: negative-control access unexpectedly succeeded."
