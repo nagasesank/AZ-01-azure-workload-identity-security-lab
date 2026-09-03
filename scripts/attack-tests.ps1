@@ -175,11 +175,27 @@ function Test-AT04 {
     }
 }
 
-function Test-AT05 {
+function Test-NegativeControlCanaryPreflight {
     param(
         [Parameter(Mandatory = $true)][string]$NegativeControlResourceGroup,
         [Parameter(Mandatory = $true)][string]$CanaryName
     )
+
+    Invoke-AzSilently -Operation "Negative-control canary owner preflight" -Arguments @(
+        "identity", "show", "--resource-group", $NegativeControlResourceGroup, "--name", $CanaryName, "--output", "none"
+    )
+}
+
+function Test-AT05 {
+    param(
+        [Parameter(Mandatory = $true)][string]$NegativeControlResourceGroup,
+        [Parameter(Mandatory = $true)][string]$CanaryName,
+        [Parameter(Mandatory = $true)][bool]$OwnerPreflightPassed
+    )
+
+    if (-not $OwnerPreflightPassed) {
+        throw "AT-05 owner-context preflight did not complete."
+    }
 
     $denialOutput = & az identity show --resource-group $NegativeControlResourceGroup --name $CanaryName --output json 2>&1
     $exitCode = $LASTEXITCODE
@@ -189,7 +205,7 @@ function Test-AT05 {
     }
 
     $denialText = $denialOutput | Out-String
-    if ($denialText -notmatch "(?i)AuthorizationFailed|Forbidden|AuthorizationPermissionMismatch|does not have authorization|not authorized|403") {
+    if ($denialText -notmatch "(?i)AuthorizationFailed|Forbidden|AuthorizationPermissionMismatch|does not have authorization|not authorized|403|ResourceGroupNotFound|ResourceNotFound|could not be found") {
         throw "AT-05 was inconclusive: negative-control access did not return an authorization denial."
     }
 
@@ -249,6 +265,13 @@ try {
     $syntheticDataBlob = Get-TerraformOutput -Name "synthetic_data_blob_name"
     $negativeControlCanary = Get-TerraformOutput -Name "negative_control_canary_name"
 
+    $ownerCanaryPreflightPassed = $false
+    if ($Test -eq "AT-05") {
+        Test-NegativeControlCanaryPreflight -NegativeControlResourceGroup $negativeControlResourceGroup -CanaryName $negativeControlCanary
+        $ownerCanaryPreflightPassed = $true
+        $script:LastAzOutput = $null
+    }
+
     $attackerAzureConfigDir = Join-Path ([System.IO.Path]::GetTempPath()) ("az01-phase3-azure-cli-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $attackerAzureConfigDir | Out-Null
     $env:AZURE_CONFIG_DIR = $attackerAzureConfigDir
@@ -267,7 +290,7 @@ try {
         "AT-02" { Test-AT02 -WorkloadResourceGroup $workloadResourceGroup }
         "AT-03" { Test-AT03 -WorkloadResourceGroup $workloadResourceGroup }
         "AT-04" { Test-AT04 -StorageAccount $storageAccount -Container $syntheticDataContainer -Blob $syntheticDataBlob }
-        "AT-05" { Test-AT05 -NegativeControlResourceGroup $negativeControlResourceGroup -CanaryName $negativeControlCanary }
+        "AT-05" { Test-AT05 -NegativeControlResourceGroup $negativeControlResourceGroup -CanaryName $negativeControlCanary -OwnerPreflightPassed $ownerCanaryPreflightPassed }
     }
 }
 catch {
