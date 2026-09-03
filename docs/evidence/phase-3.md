@@ -16,8 +16,10 @@ Phase 3 evidence was captured after an owner intentionally ran approved tests on
 - `AT-02-workload-rg-enumeration.png`
 - `AT-03-management-plane-tag-mutation.png`
 - `AT-04-synthetic-blob-access.png`
+- `AT-05-negative-control-denied.png`
+- `phase-3-all-tests-success.png`
 
-The verified AT-05 result is retained in this sanitized textual record. Only screenshots that meet the redaction requirements below are retained in the repository.
+Only screenshots that meet the redaction requirements below are retained in the repository.
 
 ## Required Redactions
 
