@@ -178,8 +178,40 @@ function Test-AT05 {
     Write-Host "[PASS] AT-05: negative-control access was denied as expected."
 }
 
+function Remove-TemporaryAzureCliProfile {
+    param([Parameter(Mandatory = $true)][string]$Path)
+
+    $maximumAttempts = 5
+    $retryDelayMilliseconds = 250
+
+    for ($attempt = 1; $attempt -le $maximumAttempts; $attempt++) {
+        if (-not (Test-Path -LiteralPath $Path)) {
+            return
+        }
+
+        try {
+            Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+        }
+        catch {
+            # Azure CLI can release telemetry files shortly after its process exits.
+        }
+
+        if (-not (Test-Path -LiteralPath $Path)) {
+            return
+        }
+
+        if ($attempt -lt $maximumAttempts) {
+            Start-Sleep -Milliseconds $retryDelayMilliseconds
+        }
+    }
+
+    throw "Temporary attacker Azure CLI profile cleanup failed after bounded retries."
+}
+
 $hadOriginalAzureConfigDir = Test-Path Env:AZURE_CONFIG_DIR
 $originalAzureConfigDir = [Environment]::GetEnvironmentVariable("AZURE_CONFIG_DIR", "Process")
+$hadOriginalAzureCoreCollectTelemetry = Test-Path Env:AZURE_CORE_COLLECT_TELEMETRY
+$originalAzureCoreCollectTelemetry = [Environment]::GetEnvironmentVariable("AZURE_CORE_COLLECT_TELEMETRY", "Process")
 $attackerAzureConfigDir = $null
 $vulnerableClientSecret = $null
 $script:LastAzOutput = $null
@@ -202,6 +234,7 @@ try {
     $attackerAzureConfigDir = Join-Path ([System.IO.Path]::GetTempPath()) ("az01-phase3-azure-cli-" + [guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $attackerAzureConfigDir | Out-Null
     $env:AZURE_CONFIG_DIR = $attackerAzureConfigDir
+    $env:AZURE_CORE_COLLECT_TELEMETRY = "false"
 
     Invoke-AzSilently -Operation "Attacker authentication" -Arguments @(
         "login", "--service-principal", "--username", $vulnerableApplicationClientId,
@@ -228,8 +261,21 @@ finally {
     $vulnerableClientSecret = $null
     Remove-Variable -Name vulnerableClientSecret -ErrorAction SilentlyContinue
 
+    $cleanupFailed = $false
     if (-not [string]::IsNullOrWhiteSpace($attackerAzureConfigDir) -and (Test-Path -LiteralPath $attackerAzureConfigDir)) {
-        Remove-Item -LiteralPath $attackerAzureConfigDir -Recurse -Force
+        try {
+            Remove-TemporaryAzureCliProfile -Path $attackerAzureConfigDir
+        }
+        catch {
+            $cleanupFailed = $true
+        }
+    }
+
+    if ($hadOriginalAzureCoreCollectTelemetry) {
+        $env:AZURE_CORE_COLLECT_TELEMETRY = $originalAzureCoreCollectTelemetry
+    }
+    else {
+        Remove-Item Env:AZURE_CORE_COLLECT_TELEMETRY -ErrorAction SilentlyContinue
     }
 
     if ($hadOriginalAzureConfigDir) {
@@ -237,5 +283,9 @@ finally {
     }
     else {
         Remove-Item Env:AZURE_CONFIG_DIR -ErrorAction SilentlyContinue
+    }
+
+    if ($cleanupFailed) {
+        throw "Temporary attacker Azure CLI profile cleanup failed after bounded retries."
     }
 }
