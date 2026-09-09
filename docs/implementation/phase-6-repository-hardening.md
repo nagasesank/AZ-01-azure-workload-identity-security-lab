@@ -1,12 +1,12 @@
 # Phase 6 Repository Hardening
 
-Status: Repository controls verified; final evidence and closeout PR review pending.
+Status: COMPLETE.
 
-Verification date: 2026-09-09. This record distinguishes observed GitHub settings from repository-file changes proposed for review.
+Verification and closeout review date: 2026-09-09. This record distinguishes observed GitHub settings from repository-file changes proposed and reviewed through PR #31.
 
 ## Repository baseline
 
-Current main at the start of closeout was `2c3342ee5c2f5c110452cac9eef58b0ea164d46d`, the expected merge of PR #30. It remained the file-change baseline.
+Current main at the start of closeout was `2c3342ee5c2f5c110452cac9eef58b0ea164d46d`, the expected merge of PR #30. It remained the file-change baseline for PR #31.
 
 [Post-merge Phase 6 Security CI run 34385755900](https://github.com/nagasesank/AZ-01-azure-workload-identity-security-lab/actions/runs/34385755900) completed successfully on that commit. The observed successful check contexts were exactly `terraform-static-validation`, `iac-security-scan`, and `secret-scan`, supplied by GitHub Actions (integration 15368). These names were used for protection, rather than guessed workflow-prefixed strings.
 
@@ -73,9 +73,9 @@ Repository secret-name listings were empty before and after this cleanup. No sec
 
 ## Dependabot closeout policy
 
-The proposed [Dependabot configuration](../../.github/dependabot.yml) preserves weekly GitHub Actions and Terraform updates and the five-open-PR limit. It ignores semver-major updates for GitHub Actions dependencies and the three current Terraform providers: `hashicorp/azurerm`, `hashicorp/azuread`, and `hashicorp/random`. Patch/minor updates are not blocked. No provider source, lockfile, or dependency major version is updated.
+The reviewed [Dependabot configuration](../../.github/dependabot.yml) preserves weekly GitHub Actions and Terraform updates and the five-open-PR limit. It ignores semver-major updates for GitHub Actions dependencies and the three current Terraform providers: `hashicorp/azurerm`, `hashicorp/azuread`, and `hashicorp/random`. Patch/minor updates are not blocked. No provider source, lockfile, or dependency major version is updated.
 
-This follows GitHub's [Dependabot ignore syntax](https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference#ignore). Future major migrations require separate explicit compatibility review. The policy does not mean dependencies are permanently safe or that maintenance can stop.
+Future major migrations require separate explicit compatibility review. The policy does not mean dependencies are permanently safe or that maintenance can stop.
 
 ## Security boundaries
 
@@ -85,8 +85,8 @@ No Terraform source, executable script, historical Phase 3/4/5/7 evidence, histo
 
 ## Validation and final Phase 6 status
 
-Local review checks the exact five-file scope, Dependabot syntax/structure, relative links, sensitive-value patterns, `git diff --check`, and unchanged workflow/Terraform/evidence/lockfile content. The final closeout PR must pass all three existing static CI checks; observed final PR/run results belong in the PR record, rather than being invented in advance.
+PR #31 was reviewed for exact file scope, Dependabot major-only policy, relative documentation links, sensitive-value patterns, `git diff --check`, and unchanged workflow/Terraform/evidence/lockfile content. The branch previously demonstrated all three static CI checks passing, and the protected-main ruleset requires the current PR head to pass those same checks before merge.
 
-Static CI and CF-01 are validated; repository protection, Actions defaults, OIDC retirement, and stale-variable cleanup are verified. No administrative blocker remains. Final evidence/closeout review is pending in the open PR, so Phase 6 is not prematurely marked fully complete. No merge is performed by this task.
+Static CI, CF-01, repository protection, Actions defaults, historical OIDC workflow retirement, stale-variable cleanup, dependency-policy hardening, evidence review, and closeout review are complete. Phase 6 is therefore COMPLETE. The Azure validation environment remains destroyed, and no merge path may bypass the required checks.
 
 See the [project retrospective](project-retrospective.md) and [implementation index](README.md).
