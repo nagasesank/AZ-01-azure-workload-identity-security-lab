@@ -240,14 +240,21 @@ function Get-ServicePrincipalTransitiveGroupIds {
             }
         }
 
-        $nextLink = [string]$response.'@odata.nextLink'
+        $nextLinkProperty = (
+    $response.PSObject.Properties['@odata.nextLink']
+)
 
-        if ([string]::IsNullOrWhiteSpace($nextLink)) {
-            $url = $null
-        }
-        else {
-            $url = $nextLink
-        }
+if (
+    $null -eq $nextLinkProperty -or
+    [string]::IsNullOrWhiteSpace(
+        [string]$nextLinkProperty.Value
+    )
+) {
+    $url = $null
+}
+else {
+    $url = [string]$nextLinkProperty.Value
+}
     }
 
     return @($groupIds.ToArray())
