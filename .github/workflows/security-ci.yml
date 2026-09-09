@@ -35,6 +35,45 @@ jobs:
         run: terraform init -backend=false
       - name: Validate Terraform configuration
         run: terraform validate
+      - name: Controlled negative path - Terraform formatting rejection
+        run: |
+          set -euo pipefail
+          set +x
+          inconclusive() {
+            printf '%s\n' 'CF-01: INCONCLUSIVE'
+            exit 3
+          }
+          temporary_copy="$(mktemp -d "${RUNNER_TEMP}/phase6-controlled-failure.XXXXXX" 2>/dev/null)" || inconclusive
+          cleanup() {
+            if ! rm -rf -- "$temporary_copy" >/dev/null 2>&1 || [[ -e "$temporary_copy" ]]; then
+              printf '%s\n' 'CF-01: INCONCLUSIVE'
+              exit 4
+            fi
+          }
+          trap cleanup EXIT
+          case "$temporary_copy/" in
+            "$GITHUB_WORKSPACE/"*) inconclusive ;;
+          esac
+          shopt -s nullglob
+          configuration_files=( ./*.tf )
+          [[ ${#configuration_files[@]} -gt 0 ]] || inconclusive
+          cp -- "${configuration_files[@]}" "$temporary_copy/" >/dev/null 2>&1 || inconclusive
+          printf 'locals {\n  controlled_failure_probe="expected"\n}\n' >"$temporary_copy/controlled_failure.tf" || inconclusive
+          cd "$temporary_copy" || inconclusive
+          initial_status=0
+          terraform fmt -check -recursive >/dev/null 2>&1 || initial_status=$?
+          if [[ $initial_status -eq 0 ]]; then
+            printf '%s\n' 'CF-01: UNEXPECTED PASS'
+            exit 2
+          fi
+          [[ $initial_status -eq 3 ]] || inconclusive
+          terraform fmt -recursive >/dev/null 2>&1 || inconclusive
+          terraform fmt -check -recursive >/dev/null 2>&1 || inconclusive
+          cd "$RUNNER_TEMP" || inconclusive
+          cleanup
+          trap - EXIT
+          printf '%s\n' 'CF-01: EXPECTED FORMATTING REJECTION VERIFIED'
+          exit 1
 
   iac-security-scan:
     name: iac-security-scan
