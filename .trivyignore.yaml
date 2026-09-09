@@ -1,0 +1,11 @@
+misconfigurations:
+  - id: AZU-0012
+    expired_at: "2026-12-31T23:59:59Z"
+    statement: >-
+      Accepted only for the AZ-01 synthetic lab design. The storage account public
+      network endpoint is intentionally reachable so owner-operated and
+      GitHub-hosted OIDC validation can access the private synthetic container.
+      Shared-key authentication is disabled, OAuth is the default, TLS 1.2 is
+      required, the container is private, and only synthetic data is used. This
+      exception is not production guidance and must be re-reviewed before any
+      future Azure deployment or before the expiration date.
