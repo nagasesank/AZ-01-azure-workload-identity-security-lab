@@ -6,6 +6,8 @@ The workflow is manual-only and does not run on push, pull request, or a schedul
 
 After Phase 5 evidence review and Terraform teardown, the Phase 5 repository secrets used to supply the Azure identifiers to the workflow were removed and verified absent. The teardown record is in [Phase 7 teardown validation](../docs/evidence/phase-7-teardown-validation.md).
 
-The [Phase 6 CI/CD security controls plan](../docs/implementation/phase-6-cicd-security-plan.md) is prepared; implementation and validation remain pending. This documentation-only change creates no CI workflow, ruleset, or security setting. The plan preserves historical Phase 4/5 workflow source and proposes owner-operated disablement after implementation review, plus exact stale Phase 4 variable cleanup after owner review. Planning has no Azure runtime dependency.
+The [Phase 6 implementation](../docs/implementation/phase-6-cicd-security-controls.md) adds `security-ci.yml` for repository/static checks on pull requests and pushes to main: Terraform validation, IaC scanning, and secret scanning. It uses read-only contents permission, no Azure authentication, and no OIDC token permission. Dependabot covers GitHub Actions and Terraform weekly. CI success is not yet observed.
+
+Historical Phase 4/5 workflow source remains unchanged. The [approved Phase 6 plan](../docs/implementation/phase-6-cicd-security-plan.md) still requires owner-operated ruleset/settings verification, historical workflow disablement, and exact stale Phase 4 variable cleanup after review. Those actions and controlled failure validation remain pending.
 
 Return to the [project README](../README.md).
