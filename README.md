@@ -2,7 +2,7 @@
 
 > Attack workload identity. Remove long-lived secrets. Prove least privilege.
 
-AZ-01 is a controlled Azure security-engineering lab that records a deliberately vulnerable workload identity, validates its constrained attack path, and preserves a factual baseline for future remediation.
+AZ-01 is a controlled Azure security-engineering lab that records a deliberately vulnerable workload identity, validates its constrained attack path, and preserves a factual baseline for remediation and revalidation.
 
 ## Executive Summary
 
@@ -10,7 +10,9 @@ The lab models the risk of a long-lived Microsoft Entra service-principal creden
 
 Phase 4 implemented Microsoft Entra workload identity federation, GitHub OIDC, and reduced authorization scope. Owner-operated runtime validation successfully verified OIDC authentication and the intended metadata-only synthetic-blob read on 2026-09-09.
 
-Phase 5 completed bounded post-remediation authorization validation on 2026-09-09 across three reviewed dispatches. The tested authorization denials and successful intended access are recorded in the [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md). Evidence review and infrastructure teardown remain pending.
+Phase 5 completed bounded post-remediation authorization validation on 2026-09-09 across three reviewed dispatches. The tested authorization denials and successful intended access are recorded in the [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md). The associated screenshots were published and reviewed.
+
+The later Phase 4/5 validation deployment was then destroyed through the owner-operated Terraform workflow. Bounded post-destroy checks verified empty Terraform state, absence of the exact known project-owned Azure targets, and removal of the Phase 5 GitHub repository secrets. See the [Phase 7 teardown validation](docs/evidence/phase-7-teardown-validation.md).
 
 ## Security Problem
 
@@ -41,11 +43,13 @@ Long-lived client secret
         -> reduced RBAC scope                           [Phase 4 complete]
         -> bounded post-remediation tests               [Phase 5 complete]
         -> tested actions/targets explicitly denied     [Phase 5 validated]
+        -> owner-operated Terraform destroy             [Phase 7 complete]
+        -> bounded cleanup verification                 [Phase 7 complete]
 ```
 
 ## Architecture
 
-The verified vulnerable design contained a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary. Phase 4 established a fresh secretless deployment with GitHub OIDC and container-scoped read access; OIDC authentication and the intended synthetic-blob metadata read are runtime-verified.
+The verified vulnerable design contained a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary. Phase 4 established a fresh secretless deployment with GitHub OIDC and container-scoped read access; OIDC authentication and the intended synthetic-blob metadata read were runtime-verified before teardown.
 
 - [Architecture index](docs/architecture/README.md)
 - [Phase 1 architecture](docs/architecture/phase-1-architecture.md)
@@ -54,7 +58,7 @@ The verified vulnerable design contained a Microsoft Entra application and servi
 
 ## Threat Model
 
-The threat model covers secret theft and replay, excessive RBAC, authorization blast radius, trust boundaries, state exposure, and planned federation and least-privilege controls.
+The threat model covers secret theft and replay, excessive RBAC, authorization blast radius, trust boundaries, state exposure, federation, and least-privilege controls.
 
 - [Threat-model index](docs/threat-model/README.md)
 - [Workload identity threat model](docs/threat-model/workload-identity-threat-model.md)
@@ -81,22 +85,26 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 - Phase 1 architecture and threat modeling completed.
 - Phase 2 vulnerable identity infrastructure was deployed and owner-validated.
 - Phase 3 AT-01 through AT-05 completed successfully; AT-03 restoration and AT-05 containment were verified.
-- The lab was destroyed after Phase 3 evidence capture for cost control.
+- The Phase 2/3 vulnerable lab was destroyed after evidence capture for cost control.
 - Phase 4 GitHub OIDC authentication and intended synthetic blob metadata read succeeded.
 - Phase 5 OIDC authentication and metadata access to the exact known synthetic blob succeeded.
 - Phase 5 tested workload-RG resource enumeration and benign tag mutation received explicit authorization denials.
 - Phase 5 creation of the dedicated synthetic write-probe blob was denied; the baseline blob was not overwritten.
 - Phase 5 access to the known negative-control canary and account-level container listing against the known workload storage account were denied.
 - Phase 5 RT-03 and RT-04W ran separately; session cleanup passed in all three dispatches. These results apply only to the tested actions and targets, not universal authorization denial.
+- Phase 5 evidence screenshots were published and reviewed.
+- The later Phase 4/5 validation deployment was destroyed through Terraform after evidence capture.
+- Post-destroy checks verified empty Terraform state and absence of the exact known workload resource group, negative-control resource group, workload Entra application, and workload service principal.
+- The Phase 5 GitHub repository secrets were removed and verified absent.
 
 **Future work**
 
-- Phase 5 evidence review, manual sanitized screenshot publication, and owner-operated infrastructure teardown.
-- CI/CD security controls and final retrospective.
+- Phase 6 CI/CD security controls.
+- Final retrospective and project closeout after Phase 6.
 
 ## Evidence
 
-Evidence follows a hierarchy of verified outputs, sanitized screenshots, and concise written records. Public evidence excludes secrets, identifiers, tokens, state, and unnecessary environment details.
+Evidence follows a hierarchy of verified outputs, sanitized screenshots, and concise written records. Public evidence excludes secrets, identifiers, tokens, state, plans, and unnecessary environment details.
 
 - [Evidence index](docs/evidence/README.md)
 - [Evidence plan](docs/evidence/evidence-plan.md)
@@ -104,20 +112,23 @@ Evidence follows a hierarchy of verified outputs, sanitized screenshots, and con
 - [Phase 3 validation](docs/evidence/phase-3.md)
 - [Phase 4 runtime validation](docs/evidence/phase-4-runtime-validation.md)
 - [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md)
+- [Phase 7 teardown validation](docs/evidence/phase-7-teardown-validation.md)
 - [Phase 2 screenshots](docs/evidence/screenshots/phase-2/)
 - [Phase 3 screenshots](docs/evidence/screenshots/phase-3/)
 - [Phase 4 screenshots](docs/evidence/screenshots/phase-4/)
+- [Phase 5 screenshots](docs/evidence/screenshots/phase-5/)
+- [Phase 7 screenshots](docs/evidence/screenshots/phase-7/)
 
 ## Repository Structure
 
 ```text
-.github/                 Future CI/CD workflow area
+.github/                 GitHub Actions validation and future Phase 6 controls
 docs/
   architecture/          Architecture and security decisions
   attack-path/           Controlled attack plans
   evidence/              Validation records and sanitized screenshots
   implementation/        Phase implementation records
-  threat-model/          Threat model documentation
+  threat-model/           Threat model documentation
 scripts/                 Local validation and historical attack harnesses
 terraform/               Terraform source of truth
 README.md                Project entry point
@@ -139,11 +150,11 @@ Each documentation area has an index: [docs](docs/README.md), [architecture](doc
 ## Local Prerequisites
 
 - Terraform `>= 1.10.0`
-- Azure CLI with an existing `az login` session for the intended subscription
+- Azure CLI with an existing `az login` session for an approved validation deployment
 - `ARM_SUBSCRIPTION_ID` and `ARM_TENANT_ID` matching that Azure CLI account
 - PowerShell
 
-See the [Terraform guide](terraform/README.md) and [script guide](scripts/README.md) for the non-destructive local validation workflow.
+See the [Terraform guide](terraform/README.md) and [script guide](scripts/README.md) for the owner-operated workflow.
 
 ## Engineering Workflow
 
@@ -153,7 +164,7 @@ CREATE -> Terraform apply -> validate -> evidence -> controlled attack/failure
        -> Terraform destroy -> cleanup verification
 ```
 
-Live Azure resources are kept only for required, owner-operated validation windows. Terraform apply and destroy are owner-operated actions; the Phase 2/3 lab has already been destroyed.
+Live Azure resources are kept only for required, owner-operated validation windows. The Phase 2/3 vulnerable lab and the later Phase 4/5 secretless validation deployment have both been destroyed after their evidence windows.
 
 ## Security and Evidence Hygiene
 
@@ -161,7 +172,7 @@ Never commit client secrets, access tokens, refresh tokens, Terraform state, tfp
 
 ## Cost Control
 
-The lab avoids VM-heavy architecture and uses small synthetic resources only. Infrastructure is deployed only for controlled validation windows. The Phase 3 environment was destroyed after evidence capture for cost control; future environments will be destroyed after testing as well. This repository does not publish fabricated cost estimates.
+The lab avoids VM-heavy architecture and uses small synthetic resources only. Infrastructure is deployed only for controlled validation windows and destroyed after testing. This repository does not publish fabricated cost estimates.
 
 ## Project Phases
 
@@ -172,9 +183,9 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 2 - Vulnerable identity infrastructure | Complete |
 | 3 - Credential-compromise validation | Complete |
 | 4 - GitHub OIDC + least privilege | Complete (GitHub OIDC authentication and intended synthetic blob metadata read validated) |
-| 5 - Re-attack/security validation | Complete (bounded post-remediation authorization validation completed; evidence review pending) |
+| 5 - Re-attack/security validation | Complete (bounded post-remediation authorization validation and evidence review complete) |
 | 6 - CI/CD security controls | Not Started |
-| 7 - Evidence/cleanup/retrospective | Not Started |
+| 7 - Evidence/cleanup/retrospective | Teardown/cleanup evidence complete; retrospective pending |
 
 ## Current Status
 
@@ -182,6 +193,9 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 Phase 3: COMPLETE
 Phase 4: COMPLETE
 Phase 5: POST-REMEDIATION VALIDATION COMPLETE
-Phase 5 evidence review: PENDING
-Current validation environment: ACTIVE; TERRAFORM TEARDOWN PENDING
+Phase 5 evidence review: COMPLETE
+Phase 6: NOT STARTED
+Phase 7 teardown/cleanup evidence: COMPLETE
+Final retrospective/project closeout: PENDING
+Current AZ-01 Azure validation environment: DESTROYED
 ```

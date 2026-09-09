@@ -24,6 +24,12 @@ The inspected [Phase 4 screenshots](screenshots/phase-4/) support the successful
 
 Post-remediation runtime validation completed on 2026-09-09. [Phase 5 runtime validation](phase-5-runtime-validation.md) records owner preflight and three bounded reviewed dispatches, including separate RT-03 and RT-04W probes and successful session cleanup.
 
-The owner will manually add the five sanitized images to [screenshots/phase-5](screenshots/phase-5/). Evidence review and infrastructure teardown remain pending; the current validation environment is active.
+The five sanitized [Phase 5 screenshots](screenshots/phase-5/) are preserved and reviewed. Phase 5 evidence publication/review is complete.
+
+## Phase 7 teardown
+
+[Phase 7 teardown validation](phase-7-teardown-validation.md) records the owner-operated Terraform destroy and bounded post-destroy verification. The associated [Phase 7 screenshots](screenshots/phase-7/) preserve the destroy-plan summary, destroy completion, exact-target cleanup checks, and Phase 5 GitHub secret removal evidence.
+
+The later Phase 4/5 validation deployment is destroyed; no live AZ-01 Azure validation environment remains. Phase 6 CI/CD security controls remain future work, and the final retrospective/project closeout remains pending.
 
 See the [evidence plan](evidence-plan.md) and return to the [documentation guide](../README.md).

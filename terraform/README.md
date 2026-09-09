@@ -1,6 +1,6 @@
 # Terraform Guide
 
-Terraform is the configuration source of truth for AZ-01. The Phase 2/3 vulnerable lab resources were intentionally destroyed after testing. Phase 4 prepares a fresh remediated deployment; runtime validation has not started.
+Terraform is the configuration source of truth for AZ-01. The Phase 2/3 vulnerable lab resources were intentionally destroyed after testing. A later fresh secretless Phase 4/5 deployment was used for GitHub OIDC and bounded post-remediation authorization validation, then destroyed after evidence capture.
 
 ## Configuration
 
@@ -14,7 +14,7 @@ The configuration defines project-owned workload and negative-control resource g
 
 ## Local Authentication and Workflow
 
-Use an existing Azure CLI `az login` session. `ARM_SUBSCRIPTION_ID` and `ARM_TENANT_ID` must match the active Azure CLI account. The only Terraform input variable is the deployment location, with an example in `terraform.tfvars.example`.
+Use an existing Azure CLI `az login` session for an approved validation deployment. `ARM_SUBSCRIPTION_ID` and `ARM_TENANT_ID` must match the active Azure CLI account. The only Terraform input variable is the deployment location, with an example in `terraform.tfvars.example`.
 
 ```powershell
 terraform init
@@ -23,6 +23,8 @@ terraform validate
 terraform plan
 ```
 
-Terraform apply and destroy are owner-operated actions. Never commit Terraform state, generated plans, `.tfvars` files containing real data, credentials, or provider cache content. Do not use sensitive outputs as documentation examples. No Phase 4 apply or runtime validation has been performed by this repository change.
+Terraform apply and destroy are owner-operated actions. Never commit Terraform state, generated plans, `.tfvars` files containing real data, credentials, or provider cache content. Do not use sensitive outputs as documentation examples.
+
+The later Phase 4/5 validation deployment was destroyed on 2026-09-09 after Phase 5 evidence review. Bounded verification confirmed empty Terraform state and absence of the exact known project-owned Azure targets recorded in the [Phase 7 teardown validation](../docs/evidence/phase-7-teardown-validation.md). No live AZ-01 Azure validation environment remains.
 
 See [scripts/README.md](../scripts/README.md) for the corresponding local validation helpers and return to the [project README](../README.md).

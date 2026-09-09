@@ -1,8 +1,8 @@
 # Phase 5 Post-Remediation Validation Plan
 
-Status: runtime validation complete; evidence review and infrastructure teardown pending.
+Status: runtime validation, evidence review, and infrastructure teardown complete.
 
-This validation matrix was planned before execution. Actual observed results from 2026-09-09 are recorded in the [Phase 5 runtime validation evidence](../evidence/phase-5-runtime-validation.md); the original design and safety constraints below remain preserved.
+This validation matrix was planned before execution. Actual observed results from 2026-09-09 are recorded in the [Phase 5 runtime validation evidence](../evidence/phase-5-runtime-validation.md); the original design and safety constraints below remain preserved. The later validation deployment teardown is recorded separately in the [Phase 7 teardown validation](../evidence/phase-7-teardown-validation.md).
 
 ## Baseline and Identity Boundary
 
@@ -69,7 +69,7 @@ RT-03 and RT-04W are real mutation attempts: expected denial does not guarantee 
 
 ## Acceptance and Evidence
 
-The planned acceptance criteria require actual reviewed results for implemented tests, verified restoration of any unexpected mutations, and revalidation of any remediation. Runtime validation is now complete as recorded in the linked evidence; evidence review and infrastructure teardown remain pending.
+The planned acceptance criteria require actual reviewed results for implemented tests, verified restoration of any unexpected mutations, and revalidation of any remediation. Runtime validation and evidence review are complete as recorded in the linked evidence. Owner-operated infrastructure teardown and bounded cleanup verification are also complete and are recorded in the Phase 7 teardown evidence.
 
 The evidence record must include the reviewed code commit, execution date, public-safe workflow provenance, preflight outcome, per-test observed result, cleanup result, and limitations. Preserve Phase 3 and Phase 4 evidence unchanged.
 
