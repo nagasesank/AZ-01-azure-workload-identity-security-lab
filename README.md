@@ -99,8 +99,7 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 
 **Future work**
 
-- Phase 6 repository enforcement/settings and final evidence remain pending; [static CI and controlled failure validation](docs/implementation/phase-6-controlled-failure-validation.md) are complete.
-- Final retrospective and project closeout after Phase 6.
+- Final review of [Phase 6 repository hardening](docs/implementation/phase-6-repository-hardening.md) and the [project retrospective](docs/implementation/project-retrospective.md). Static CI, controlled failure validation, repository controls, OIDC workflow retirement, and stale-variable cleanup are verified.
 
 ## Evidence
 
@@ -184,8 +183,8 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 3 - Credential-compromise validation | Complete |
 | 4 - GitHub OIDC + least privilege | Complete (GitHub OIDC authentication and intended synthetic blob metadata read validated) |
 | 5 - Re-attack/security validation | Complete (bounded post-remediation authorization validation and evidence review complete) |
-| 6 - CI/CD security controls | In Progress (static CI and controlled failure validation complete; repository enforcement/settings and final evidence pending) |
-| 7 - Evidence/cleanup/retrospective | Teardown/cleanup evidence complete; retrospective pending |
+| 6 - CI/CD security controls | Controls implemented and verified; final evidence/closeout review pending |
+| 7 - Evidence/cleanup/retrospective | Teardown/cleanup evidence complete; retrospective prepared for review |
 
 ## Current Status
 
@@ -194,8 +193,8 @@ Phase 3: COMPLETE
 Phase 4: COMPLETE
 Phase 5: POST-REMEDIATION VALIDATION COMPLETE
 Phase 5 evidence review: COMPLETE
-Phase 6: STATIC CI + CONTROLLED FAILURE VALIDATION COMPLETE; REPOSITORY CONTROLS PENDING
+Phase 6: REPOSITORY CONTROLS VERIFIED; FINAL EVIDENCE/CLOSEOUT REVIEW PENDING
 Phase 7 teardown/cleanup evidence: COMPLETE
-Final retrospective/project closeout: PENDING
+Final retrospective/project closeout: PREPARED; REVIEW PENDING
 Current AZ-01 Azure validation environment: DESTROYED
 ```
