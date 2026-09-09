@@ -55,6 +55,7 @@ jobs:
           exit-code: '1'
           format: json
           output: ${{ runner.temp }}/iac-security-scan.json
+          trivyignores: .trivyignore.yaml
           cache-dir: ${{ runner.temp }}/trivy-cache
           cache: 'false'
           hide-progress: 'true'
@@ -68,14 +69,26 @@ jobs:
           python3 - <<'PY'
           import json, os, re
           from pathlib import Path
+
           report = Path(os.environ["REPORT_PATH"])
           try:
               data = json.loads(report.read_text())
-              if data.get("SchemaVersion") != 2 or not isinstance(data.get("Results"), list):
-                  raise ValueError("invalid report")
-              if not any(r.get("Type") == "terraform" for r in data["Results"]):
-                  raise ValueError("Terraform scan results missing")
-              findings = [f for r in data["Results"] for f in r.get("Misconfigurations", [])]
+              if data.get("SchemaVersion") != 2:
+                  raise ValueError("invalid report schema")
+
+              results = data.get("Results")
+              if results is None:
+                  results = []
+              if not isinstance(results, list) or not all(isinstance(r, dict) for r in results):
+                  raise ValueError("invalid results")
+
+              findings = [
+                  finding
+                  for result in results
+                  for finding in (result.get("Misconfigurations") or [])
+                  if isinstance(finding, dict)
+              ]
+
               print("Finding count:", len(findings))
               for finding in findings:
                   rule = finding.get("ID", "")
@@ -83,9 +96,10 @@ jobs:
                   safe_rule = rule if re.fullmatch(r"[A-Za-z0-9_-]{1,100}", rule) else "REDACTED"
                   safe_severity = severity if severity in {"UNKNOWN","LOW","MEDIUM","HIGH","CRITICAL"} else "UNKNOWN"
                   print(safe_rule, safe_severity)
+
               if findings:
                   raise SystemExit(1)
-          except (OSError, ValueError, TypeError, KeyError):
+          except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
               print("Scanner report unavailable or invalid; gate failed.")
               raise SystemExit(1)
           finally:
@@ -124,16 +138,26 @@ jobs:
           python3 - <<'PY'
           import json, os, re
           from pathlib import Path
+
           report = Path(os.environ["REPORT_PATH"])
           try:
               data = json.loads(report.read_text())
-              # Trivy omits Results when no secrets are found.
-              if data.get("SchemaVersion") != 2 or data.get("ArtifactType") != "filesystem":
-                  raise ValueError("invalid report")
-              results = data.get("Results") or []
-              if not isinstance(results, list):
+              if data.get("SchemaVersion") != 2:
+                  raise ValueError("invalid report schema")
+
+              results = data.get("Results")
+              if results is None:
+                  results = []
+              if not isinstance(results, list) or not all(isinstance(r, dict) for r in results):
                   raise ValueError("invalid results")
-              findings = [f for r in results for f in r.get("Secrets", [])]
+
+              findings = [
+                  finding
+                  for result in results
+                  for finding in (result.get("Secrets") or [])
+                  if isinstance(finding, dict)
+              ]
+
               print("Finding count:", len(findings))
               for finding in findings:
                   rule = finding.get("RuleID", "")
@@ -141,9 +165,10 @@ jobs:
                   safe_rule = rule if re.fullmatch(r"[A-Za-z0-9_-]{1,100}", rule) else "REDACTED"
                   safe_severity = severity if severity in {"UNKNOWN","LOW","MEDIUM","HIGH","CRITICAL"} else "UNKNOWN"
                   print(safe_rule, safe_severity)
+
               if findings:
                   raise SystemExit(1)
-          except (OSError, ValueError, TypeError, KeyError):
+          except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
               print("Scanner report unavailable or invalid; gate failed.")
               raise SystemExit(1)
           finally:

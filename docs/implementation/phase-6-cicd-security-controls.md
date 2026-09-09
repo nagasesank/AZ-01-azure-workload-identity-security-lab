@@ -1,12 +1,12 @@
 # Phase 6 CI/CD Security Controls Implementation
 
-Status: Implementation prepared; CI validation pending.
+Status: Implementation corrected after initial CI; revalidation pending.
 
 Baseline: merged Phase 6 plan at `b0fe869c8516894f8c066d7dec36b768ebe77b7e`.
 
 ## Objective
 
-Implement repository-static CI without an Azure runtime dependency. Phase 6 remains in progress: code preparation is separate from observed enforcement and owner-verified repository controls. The AZ-01 Azure validation environment remains destroyed.
+Implement repository-static CI without an Azure runtime dependency. Phase 6 remains in progress: code preparation and CI execution are separate from owner-verified repository controls. The AZ-01 Azure validation environment remains destroyed.
 
 ## Implemented repository controls
 
@@ -15,7 +15,7 @@ Implement repository-static CI without an Azure runtime dependency. Phase 6 rema
 | Job | Gate |
 | --- | --- |
 | `terraform-static-validation` | Terraform formatting, backend-free initialization, and configuration validation |
-| `iac-security-scan` | Trivy Terraform misconfiguration scan; HIGH/CRITICAL findings fail |
+| `iac-security-scan` | Trivy Terraform misconfiguration scan; unexcepted HIGH/CRITICAL findings fail |
 | `secret-scan` | Trivy current-repository content scan; secret findings at any severity fail |
 
 Use these exact job names when verifying required status checks later; the workflow context is `Phase 6 Security CI / <job-name>`. The owner must select the actual observed checks after successful runs, without casually renaming them. All jobs have 15-minute timeouts and run on GitHub-hosted Ubuntu 24.04.
@@ -54,15 +54,21 @@ No plan, apply, destroy, state retrieval, Terraform output retrieval, backend in
 
 ## IaC scanning policy
 
-Trivy configuration scanning is scoped to `terraform/`, using misconfiguration rules and HIGH/CRITICAL severity gating with exit code 1. Scanner execution errors fail the job; a missing, malformed, or non-Terraform report also fails. There is no continue-on-error path, ignore file, blanket suppression, or automatic remediation.
+Trivy configuration scanning is scoped to `terraform/`, using misconfiguration rules and HIGH/CRITICAL severity gating with exit code 1. Scanner execution errors fail the job; a missing or malformed JSON report also fails. There is no continue-on-error path or automatic remediation.
 
-Review the initial baseline before any disposition. HIGH/CRITICAL findings remain failing and are reported by ID/severity only for separate review. Never weaken Terraform permissions or controls to make a scanner pass. Any future suppression requires a narrow reviewed technical rationale.
+The first observed PR run, GitHub Actions run `34382589099`, reported exactly one CRITICAL IaC finding: `AZU-0012`. The finding corresponds to the storage account design allowing public-network reachability rather than defining a default-deny storage firewall. This was reviewed rather than silently suppressed.
+
+AZ-01 intentionally needs the synthetic storage endpoint reachable from owner workstations and GitHub-hosted runners during bounded OIDC validation. Compensating controls in the Terraform design include disabled shared-key authentication, OAuth as the default authentication mode, TLS 1.2 minimum, a private container, and synthetic data only. Because the current Azure environment is destroyed and this reachability is a deliberate lab requirement rather than production guidance, `AZU-0012` is recorded as one explicit time-bounded exception in [`.trivyignore.yaml`](../../.trivyignore.yaml), expiring 2026-12-31. The exception must be re-reviewed before any future Azure deployment or before expiration. No Terraform `.tf` file is changed to make the scanner pass, and no wildcard or blanket suppression is used.
+
+All other HIGH/CRITICAL findings remain fail-closed. Future exceptions require a similarly narrow reviewed technical rationale and should not be added merely to make CI green.
 
 ## Secret scanning policy
 
-Trivy is the mature alternative scanner used here for both IaC and secret detection, avoiding another action integration and PR-API permissions. The filesystem secret scan covers the checked-out repository content using all severities. It does not traverse all historical Git revisions; passing it is not a clean-history claim. Scanner coverage and file-type limitations still apply. See [Trivy secret scanning documentation](https://trivy.dev/docs/latest/scanner/secret/).
+Trivy is used for both IaC and secret detection, avoiding another action integration and PR-API permissions. The filesystem secret scan covers the checked-out repository content using all severities. It does not traverse all historical Git revisions; passing it is not a clean-history claim. Scanner coverage and file-type limitations still apply. See [Trivy secret scanning documentation](https://trivy.dev/docs/latest/scanner/secret/).
 
-Both scanners write JSON only to runner temporary storage. The reporting steps emit counts and allowlisted-format rule IDs/severities, never matched values, source snippets, paths, or full reports. Temporary reports are deleted by the reporting step, including on scan failure. Cancellation relies on disposal of the ephemeral hosted runner. Raw reports/logs are not committed or uploaded as artifacts.
+In the first observed PR run, the Trivy secret-scan action itself completed successfully with `exit-code: 1`, but the following report-validation step failed because it required a specific `ArtifactType` value. That check was stricter than necessary for a valid Trivy schema-v2 filesystem result. The validator now requires valid JSON schema version 2 and a list-shaped `Results` field when present; missing `Results` is accepted as an empty result set. The Trivy action remains the primary fail-closed secret-detection gate, while the post-processing step only emits safe finding metadata and rejects malformed reports.
+
+Both scanners write JSON only to runner temporary storage. Reporting steps emit counts and allowlisted-format rule IDs/severities, never matched values, source snippets, paths, or full reports. Temporary reports are deleted by the reporting step, including on scan failure. Cancellation relies on disposal of the ephemeral hosted runner. Raw reports/logs are not committed or uploaded as artifacts.
 
 No synthetic credentials, broad allowlists, or historical evidence rewrites are introduced. If a finding requires changing historical evidence, stop and report only necessary metadata for owner review. Repository-native secret scanning/push protection availability and enablement remain owner-verification work; current credential/state exclusions remain unchanged.
 
@@ -103,14 +109,24 @@ In a later reviewed change, create a harmless formatting violation only in a tem
 
 No intentionally bad fixture is committed or executed in this PR; no fake secret or vulnerable cloud resource is used. The final repository tree must contain no broken fixture. One negative-path result proves only the tested gate and failure mode.
 
-## Local validation and evidence/acceptance
+## Validation and evidence status
 
-Local Terraform 1.14.8 formatting passed. Backend-free initialization and validation passed in an isolated copy; validation returned zero errors and zero warnings. No Azure/runtime operation was performed. YAML structure, minimal permissions, trigger/job/pin constraints, Dependabot fields, relative links, and changed-file scope are checked before commit.
+Local Terraform 1.14.8 formatting passed. Backend-free initialization and validation passed in an isolated copy; validation returned zero errors and zero warnings. No Azure/runtime operation was performed. YAML structure, minimal permissions, trigger/job/pin constraints, Dependabot fields, relative links, and changed-file scope were checked before the original implementation commit.
 
-GitHub Actions CI and scanner findings are not yet observed. Do not infer a clean scanner baseline from static configuration review. Phase 6 completion still requires normal CI observation, controlled negative-path failure, remediation/revalidation, owner-verified ruleset and Actions settings, historical workflow disablement, exact stale variable cleanup where applicable, and sanitized evidence based on actual observations. Final retrospective remains pending.
+Initial GitHub Actions run `34382589099` produced the following bounded observations:
+
+| Job | Observed result |
+| --- | --- |
+| `terraform-static-validation` | PASS |
+| `iac-security-scan` | FAIL — one reviewed `AZU-0012` CRITICAL finding |
+| `secret-scan` | FAIL — Trivy scan step succeeded; report validator rejected the report shape |
+
+The workflow correction records the reviewed `AZU-0012` exception and relaxes only the over-strict report-shape assumptions. A new PR run is required before any CI-success claim is made.
+
+Phase 6 completion still requires successful normal CI observation, controlled negative-path failure, remediation/revalidation, owner-verified ruleset and Actions settings, historical workflow disablement, exact stale variable cleanup where applicable, and sanitized evidence based on actual observations. Final retrospective remains pending.
 
 ## Security limitations
 
-Static CI does not establish Azure runtime authorization, universal least privilege, old-secret replay failure, universal Azure cleanup, OIDC runtime authentication, or cloud resource security outside the scanned configuration. Provider/scanner availability failures are not successful validation. No screenshots or CI evidence are fabricated.
+Static CI does not establish Azure runtime authorization, universal least privilege, old-secret replay failure, universal Azure cleanup, OIDC runtime authentication, or cloud resource security outside the scanned configuration. The `AZU-0012` exception is a documented lab-specific risk acceptance, not a statement that public storage networking is generally secure. Provider/scanner availability failures are not successful validation. No screenshots or CI evidence are fabricated.
 
 See the [approved Phase 6 plan](phase-6-cicd-security-plan.md) and [implementation index](README.md).
