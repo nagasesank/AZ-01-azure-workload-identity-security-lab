@@ -8,7 +8,7 @@ AZ-01 is a controlled Azure security-engineering lab that records a deliberately
 
 The lab models the risk of a long-lived Microsoft Entra service-principal credential combined with excessive Azure RBAC. Phase 3 validated a controlled credential-compromise path only against project-owned resources and synthetic data. Terraform is the infrastructure source of truth.
 
-Phase 4 Terraform and workflow implementation prepare Microsoft Entra workload identity federation, GitHub OIDC, and reduced authorization scope. Runtime deployment and validation are pending.
+Phase 4 implemented Microsoft Entra workload identity federation, GitHub OIDC, and reduced authorization scope. Owner-operated runtime validation successfully verified OIDC authentication and the intended metadata-only synthetic-blob read on 2026-09-09.
 
 ## Security Problem
 
@@ -43,7 +43,7 @@ Long-lived client secret
 
 ## Architecture
 
-The verified vulnerable design contained a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary. Phase 4 now prepares a fresh secretless redeployment with GitHub OIDC and container-scoped read access; runtime validation is pending.
+The verified vulnerable design contained a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary. Phase 4 established a fresh secretless deployment with GitHub OIDC and container-scoped read access; OIDC authentication and the intended synthetic-blob metadata read are runtime-verified.
 
 - [Architecture index](docs/architecture/README.md)
 - [Phase 1 architecture](docs/architecture/phase-1-architecture.md)
@@ -83,8 +83,7 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 
 **Future work**
 
-- Phase 4 owner-operated deployment and OIDC validation.
-- Post-remediation re-attack and security validation.
+- Phase 5 post-remediation authorization, re-attack, and security validation.
 - CI/CD security controls and final retrospective.
 
 ## Evidence
@@ -95,6 +94,7 @@ Evidence follows a hierarchy of verified outputs, sanitized screenshots, and con
 - [Evidence plan](docs/evidence/evidence-plan.md)
 - [Phase 2 validation](docs/evidence/phase-2-validation.md)
 - [Phase 3 validation](docs/evidence/phase-3.md)
+- [Phase 4 runtime validation](docs/evidence/phase-4-runtime-validation.md)
 - [Phase 2 screenshots](docs/evidence/screenshots/phase-2/)
 - [Phase 3 screenshots](docs/evidence/screenshots/phase-3/)
 
@@ -124,7 +124,7 @@ Each documentation area has an index: [docs](docs/README.md), [architecture](doc
 - Microsoft Entra ID and Azure RBAC
 - Azure Storage with synthetic data only
 - PowerShell
-- GitHub Actions manual OIDC validation workflow, pending runtime validation
+- GitHub Actions manual OIDC validation workflow, runtime-validated
 
 ## Local Prerequisites
 
@@ -161,7 +161,7 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 1 - Architecture/threat modeling | Complete |
 | 2 - Vulnerable identity infrastructure | Complete |
 | 3 - Credential-compromise validation | Complete |
-| 4 - GitHub OIDC + least privilege | In Progress (runtime validation pending) |
+| 4 - GitHub OIDC + least privilege | Complete (OIDC authentication and intended read validated) |
 | 5 - Re-attack/security validation | Not Started |
 | 6 - CI/CD security controls | Not Started |
 | 7 - Evidence/cleanup/retrospective | Not Started |
@@ -171,5 +171,6 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 ```text
 Phase 3: COMPLETE
 Azure resources: DESTROYED
-Phase 4: IMPLEMENTATION PREPARED; RUNTIME VALIDATION PENDING
+Phase 4: OIDC AUTHENTICATION AND INTENDED READ VALIDATED
+Phase 5: POST-REMEDIATION AUTHORIZATION TESTING PENDING
 ```
