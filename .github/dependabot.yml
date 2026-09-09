@@ -5,8 +5,18 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: terraform
     directory: /terraform
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "hashicorp/azurerm"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "hashicorp/azuread"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "hashicorp/random"
+        update-types: ["version-update:semver-major"]
