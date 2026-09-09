@@ -83,7 +83,7 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 
 **Future work**
 
-- Phase 5 post-remediation authorization, re-attack, and security validation.
+- [Phase 5 post-remediation validation](docs/attack-path/phase-5-validation-plan.md): test plan prepared; implementation and runtime validation pending.
 - CI/CD security controls and final retrospective.
 
 ## Evidence
@@ -163,7 +163,7 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 2 - Vulnerable identity infrastructure | Complete |
 | 3 - Credential-compromise validation | Complete |
 | 4 - GitHub OIDC + least privilege | Complete (OIDC authentication and intended read validated) |
-| 5 - Re-attack/security validation | Not Started |
+| 5 - Re-attack/security validation | In Progress (test plan prepared; implementation and execution pending) |
 | 6 - CI/CD security controls | Not Started |
 | 7 - Evidence/cleanup/retrospective | Not Started |
 
