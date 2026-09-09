@@ -14,8 +14,12 @@ Retain verified outputs only. Do not fabricate results. Public evidence must be 
 
 Phase 3 evidence is the immutable vulnerable-state baseline except for factual or redaction corrections.
 
+## Phase 4
+
+[Phase 4 runtime validation](phase-4-runtime-validation.md) records the successful manual GitHub OIDC authentication and metadata-only read validation against the known synthetic blob. Raw workflow logs are not copied because expanded action inputs can expose identifiers.
+
 ## Future Evidence
 
-Phase 4 evidence will document remediation deployment, GitHub OIDC, federated identity, and least-privilege work when it occurs. Phase 5 evidence will record post-remediation re-attack results. Neither phase has started, and no future results are created in advance.
+Phase 5 evidence will record post-remediation authorization and re-attack results. Those tests have not been run, and no future results are created in advance.
 
 See the [evidence plan](evidence-plan.md) and return to the [documentation guide](../README.md).
