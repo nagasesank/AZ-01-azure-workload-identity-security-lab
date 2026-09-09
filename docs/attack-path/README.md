@@ -3,6 +3,7 @@
 AZ-01 attack validation is a controlled security test, not general offensive tooling. Tests use project-owned resources, known targets, and synthetic data only; they do not enumerate or target arbitrary subscription resources.
 
 - [Phase 5 post-remediation validation plan](phase-5-validation-plan.md)
+- [Phase 5 runtime validation evidence](../evidence/phase-5-runtime-validation.md)
 - [Phase 1 controlled attack plan](phase-1-attack-plan.md)
 - [Phase 3 validation evidence](../evidence/phase-3.md)
 

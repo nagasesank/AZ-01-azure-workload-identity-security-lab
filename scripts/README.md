@@ -15,8 +15,8 @@ Scripts are owner-operated local helpers. Their behavior is not a substitute for
 
 ## Phase 5
 
-Phase 5 harness implementation is in progress. `phase-5-owner-preflight.ps1` provides owner-context readiness inspection, and `.github/workflows/phase-5-oidc-validation.yml` provides the separate manual-only workload OIDC validation harness defined by the [Phase 5 test plan](../docs/attack-path/phase-5-validation-plan.md).
+On 2026-09-09, `phase-5-owner-preflight.ps1` completed PF-01 through PF-06 successfully. The manual GitHub OIDC validation harness in `.github/workflows/phase-5-oidc-validation.yml` completed RT-01 through RT-06 (including RT-04R and RT-04W) across three bounded reviewed dispatches defined by the [Phase 5 test plan](../docs/attack-path/phase-5-validation-plan.md). RT-03 and RT-04W were executed separately, and cleanup passed in all three runs. See the [Phase 5 runtime validation evidence](../docs/evidence/phase-5-runtime-validation.md) for individual results and limits.
 
-The Phase 5 harness has not been executed. RT-03 and RT-04W remain explicit opt-in mutation probes and must not run together. The historical Phase 3 harness remains unchanged and must not be reused against the current OIDC deployment.
+RT-03 and RT-04W remain explicit opt-in mutation probes and must not run together. Credential absence was verified by configuration inspection, not retired-secret replay testing. Historical Phase 3 `attack-tests.ps1` remains retired and must not be reused against the current secretless deployment because it relies on retired vulnerable-secret outputs. Evidence review and infrastructure teardown are pending; session cleanup does not mean the infrastructure was destroyed.
 
 Return to the [project README](../README.md).
