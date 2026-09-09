@@ -10,6 +10,8 @@ The lab models the risk of a long-lived Microsoft Entra service-principal creden
 
 Phase 4 implemented Microsoft Entra workload identity federation, GitHub OIDC, and reduced authorization scope. Owner-operated runtime validation successfully verified OIDC authentication and the intended metadata-only synthetic-blob read on 2026-09-09.
 
+Phase 5 completed bounded post-remediation authorization validation on 2026-09-09 across three reviewed dispatches. The tested authorization denials and successful intended access are recorded in the [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md). Evidence review and infrastructure teardown remain pending.
+
 ## Security Problem
 
 Long-lived credentials can be copied and replayed. Excessive RBAC expands the actions available after authentication. Credential security and authorization scope must both be addressed: removing a secret alone does not correct excessive permissions, and narrowing permissions alone does not prevent credential replay.
@@ -19,7 +21,7 @@ Long-lived credentials can be copied and replayed. Excessive RBAC expands the ac
 - Model a vulnerable workload identity in a dedicated lab boundary.
 - Validate a controlled attack path and its authorization impact.
 - Maintain a project-owned negative control outside the workload authorization boundary.
-- Replace long-lived secrets with federated identity in a future phase.
+- Replace long-lived secrets with federated identity.
 - Reduce Azure RBAC to the narrowest practical scope.
 - Re-run controlled tests after remediation.
 - Preserve verified, sanitized evidence.
@@ -33,12 +35,12 @@ Long-lived client secret
         -> excessive Azure RBAC
         -> controlled credential compromise
         -> excessive authorized actions demonstrated
-        -> remove long-lived credential                 [Phase 4 prepared]
-        -> GitHub OIDC                                  [Phase 4 prepared]
-        -> Entra federated identity credential          [Phase 4 prepared]
-        -> least-privilege RBAC                         [Phase 4 prepared]
-        -> repeat attack tests                          [Phase 5 future work]
-        -> unauthorized actions denied                  [Phase 5 future work]
+        -> later secretless deployment                  [Phase 4 complete]
+        -> GitHub OIDC                                  [Phase 4 validated]
+        -> Entra federated identity credential          [Phase 4 complete]
+        -> reduced RBAC scope                           [Phase 4 complete]
+        -> bounded post-remediation tests               [Phase 5 complete]
+        -> tested actions/targets explicitly denied     [Phase 5 validated]
 ```
 
 ## Architecture
@@ -80,10 +82,16 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 - Phase 2 vulnerable identity infrastructure was deployed and owner-validated.
 - Phase 3 AT-01 through AT-05 completed successfully; AT-03 restoration and AT-05 containment were verified.
 - The lab was destroyed after Phase 3 evidence capture for cost control.
+- Phase 4 GitHub OIDC authentication and intended synthetic blob metadata read succeeded.
+- Phase 5 OIDC authentication and metadata access to the exact known synthetic blob succeeded.
+- Phase 5 tested workload-RG resource enumeration and benign tag mutation received explicit authorization denials.
+- Phase 5 creation of the dedicated synthetic write-probe blob was denied; the baseline blob was not overwritten.
+- Phase 5 access to the known negative-control canary and account-level container listing against the known workload storage account were denied.
+- Phase 5 RT-03 and RT-04W ran separately; session cleanup passed in all three dispatches. These results apply only to the tested actions and targets, not universal authorization denial.
 
 **Future work**
 
-- [Phase 5 post-remediation validation](docs/attack-path/phase-5-validation-plan.md): test plan prepared; implementation and runtime validation pending.
+- Phase 5 evidence review, manual sanitized screenshot publication, and owner-operated infrastructure teardown.
 - CI/CD security controls and final retrospective.
 
 ## Evidence
@@ -95,6 +103,7 @@ Evidence follows a hierarchy of verified outputs, sanitized screenshots, and con
 - [Phase 2 validation](docs/evidence/phase-2-validation.md)
 - [Phase 3 validation](docs/evidence/phase-3.md)
 - [Phase 4 runtime validation](docs/evidence/phase-4-runtime-validation.md)
+- [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md)
 - [Phase 2 screenshots](docs/evidence/screenshots/phase-2/)
 - [Phase 3 screenshots](docs/evidence/screenshots/phase-3/)
 - [Phase 4 screenshots](docs/evidence/screenshots/phase-4/)
@@ -162,8 +171,8 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 1 - Architecture/threat modeling | Complete |
 | 2 - Vulnerable identity infrastructure | Complete |
 | 3 - Credential-compromise validation | Complete |
-| 4 - GitHub OIDC + least privilege | Complete (OIDC authentication and intended read validated) |
-| 5 - Re-attack/security validation | In Progress (test plan prepared; implementation and execution pending) |
+| 4 - GitHub OIDC + least privilege | Complete (GitHub OIDC authentication and intended synthetic blob metadata read validated) |
+| 5 - Re-attack/security validation | Complete (bounded post-remediation authorization validation completed; evidence review pending) |
 | 6 - CI/CD security controls | Not Started |
 | 7 - Evidence/cleanup/retrospective | Not Started |
 
@@ -171,7 +180,8 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 
 ```text
 Phase 3: COMPLETE
-Phase 4 validation environment: ACTIVE; TEARDOWN PENDING
-Phase 4: OIDC AUTHENTICATION AND INTENDED READ VALIDATED
-Phase 5: POST-REMEDIATION AUTHORIZATION TESTING PENDING
+Phase 4: COMPLETE
+Phase 5: POST-REMEDIATION VALIDATION COMPLETE
+Phase 5 evidence review: PENDING
+Current validation environment: ACTIVE; TERRAFORM TEARDOWN PENDING
 ```

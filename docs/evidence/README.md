@@ -20,8 +20,10 @@ Phase 3 evidence is the immutable vulnerable-state baseline except for factual o
 
 The inspected [Phase 4 screenshots](screenshots/phase-4/) support the successful authentication, intended read, and cleanup results. They do not establish Phase 5 authorization-denial results.
 
-## Future Evidence
+## Phase 5
 
-Phase 5 evidence will record post-remediation authorization and re-attack results. Those tests have not been run, and no future results are created in advance.
+Post-remediation runtime validation completed on 2026-09-09. [Phase 5 runtime validation](phase-5-runtime-validation.md) records owner preflight and three bounded reviewed dispatches, including separate RT-03 and RT-04W probes and successful session cleanup.
+
+The owner will manually add the five sanitized images to [screenshots/phase-5](screenshots/phase-5/). Evidence review and infrastructure teardown remain pending; the current validation environment is active.
 
 See the [evidence plan](evidence-plan.md) and return to the [documentation guide](../README.md).
