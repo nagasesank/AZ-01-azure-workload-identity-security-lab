@@ -170,7 +170,7 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 
 ```text
 Phase 3: COMPLETE
-Azure resources: DESTROYED
+Phase 4 validation environment: ACTIVE; TEARDOWN PENDING
 Phase 4: OIDC AUTHENTICATION AND INTENDED READ VALIDATED
 Phase 5: POST-REMEDIATION AUTHORIZATION TESTING PENDING
 ```
