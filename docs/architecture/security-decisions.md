@@ -46,8 +46,8 @@ The final implementation uses Microsoft Entra workload identity federation. It m
 
 - Issuer: `https://token.actions.githubusercontent.com`
 - Audience: `api://AzureADTokenExchange`
-- Subject: `repo:nagasesank/AZ-01-azure-workload-identity-security-lab:ref:refs/heads/main`
+- Subject: `repo:nagasesank@67413218/AZ-01-azure-workload-identity-security-lab@1348063865:ref:refs/heads/main`
 
-**Reason:** The issuer establishes GitHub as the token source, the audience limits token exchange, and the exact subject limits trust to this repository's `main` branch. No repository wildcard, pull-request subject, tag wildcard, environment wildcard, organization-wide trust, or additional branch subject is allowed.
+**Reason:** The issuer establishes GitHub as the token source, the audience limits token exchange, and the exact immutable subject limits trust to this repository's `main` branch. GitHub's immutable subject format includes stable owner and repository IDs. No repository wildcard, pull-request subject, tag wildcard, environment wildcard, organization-wide trust, or additional branch subject is allowed.
 
 GitHub OIDC federation answers, "Which external workload can obtain a Microsoft Entra token?" Azure RBAC answers, "What can that authenticated principal do?" The Phase 4 remediation requires both independent controls.

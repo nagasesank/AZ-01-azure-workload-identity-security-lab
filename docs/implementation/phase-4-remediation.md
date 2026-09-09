@@ -18,7 +18,7 @@ The workload application and service principal have no application password. Git
 
 - Issuer: `https://token.actions.githubusercontent.com`
 - Audience: `api://AzureADTokenExchange`
-- Subject: `repo:nagasesank/AZ-01-azure-workload-identity-security-lab:ref:refs/heads/main`
+- Subject: `repo:nagasesank@67413218/AZ-01-azure-workload-identity-security-lab@1348063865:ref:refs/heads/main`
 
 The workload receives only `Storage Blob Data Reader` at the synthetic-data container Resource Manager scope. It has no Contributor, management-plane Reader, storage write, storage owner, or negative-control resource-group role assignment.
 
