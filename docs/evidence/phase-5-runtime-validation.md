@@ -1,6 +1,6 @@
 # Phase 5 Post-Remediation Runtime Validation
 
-Status: Runtime validation complete; evidence review and infrastructure teardown pending.
+Status: Runtime validation and evidence review complete; later validation deployment teardown complete.
 
 Execution date: 2026-09-09
 
@@ -10,7 +10,7 @@ Record the owner-verified post-remediation runtime results for the tested worklo
 
 ## Phase/baseline relationship
 
-Phase 3 remains the immutable vulnerable/pre-remediation baseline. Phase 4 and Phase 5 use the later secretless deployment, in a different deployment window. These results do not establish in-place revocation or replay failure of the historical Phase 3 credential. The historical `scripts/attack-tests.ps1` relies on retired vulnerable-secret outputs and must not be reused against the current deployment.
+Phase 3 remains the immutable vulnerable/pre-remediation baseline. Phase 4 and Phase 5 use the later secretless deployment, in a different deployment window. These results do not establish in-place revocation or replay failure of the historical Phase 3 credential. The historical `scripts/attack-tests.ps1` relies on retired vulnerable-secret outputs and must not be reused against the later Phase 4/5 deployment, which has now been destroyed.
 
 ## Reviewed workflow provenance
 
@@ -125,11 +125,11 @@ Cleanup passed in every dispatch.
 - Raw GitHub Actions logs are not preserved as public evidence because authentication output may include sensitive identifiers/OIDC context.
 - No deletion, key retrieval, SAS generation, role changes, production-data access, or arbitrary subscription enumeration was performed during this validation.
 - These bounded observations do not establish universal least privilege or universal authorization denial.
-- Screenshot publication and evidence review remain pending. No screenshot or runtime evidence was fabricated for this documentation.
+- Screenshot publication and evidence review are complete; no screenshot or runtime evidence was fabricated for this documentation.
 
 ## Evidence screenshots
 
-The owner will manually add and push the five sanitized PNG files below. These are expected evidence paths, not confirmation that images are already present; no placeholder image files are included.
+The five sanitized Phase 5 PNG files are preserved in the repository and were reviewed before teardown.
 
 ![Phase 5 owner preflight](screenshots/phase-5/00-owner-preflight-pass.png)
 
@@ -143,6 +143,8 @@ The owner will manually add and push the five sanitized PNG files below. These a
 
 ## Teardown status
 
-The current validation environment is ACTIVE; TERRAFORM TEARDOWN PENDING. Runtime session cleanup passed, but infrastructure has not been recorded as destroyed. Evidence review and owner-operated infrastructure teardown remain pending.
+The later Phase 4/5 validation deployment was destroyed after Phase 5 evidence review. Owner-operated Terraform destroy completed successfully, and bounded post-destroy checks verified empty Terraform state and absence of the exact known workload resource group, negative-control resource group, workload Entra application, and workload service principal. The Phase 5 GitHub repository secrets were also removed and verified absent.
+
+See the [Phase 7 teardown validation](phase-7-teardown-validation.md) for the cleanup evidence and limitations.
 
 Return to the [evidence index](README.md).
