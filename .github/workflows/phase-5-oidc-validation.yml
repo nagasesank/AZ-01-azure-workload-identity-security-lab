@@ -153,6 +153,9 @@ jobs:
 
             if grep -Eq \
               '(^|[^[:alnum:]_])(AuthorizationFailed|AuthorizationPermissionMismatch)([^[:alnum:]_]|$)' \
+              <<<"$error_text" || \
+              grep -Fq \
+              'You do not have the required permissions needed to perform this operation.' \
               <<<"$error_text"; then
 
               RESULTS["$label"]="PASS"
@@ -251,6 +254,8 @@ jobs:
           if ! run_positive_control; then
             stop_validation
           fi
+
+          RESULTS["RT-04R"]="PASS"
 
           #
           # RT-02 — workload RG enumeration must be denied
