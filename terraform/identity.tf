@@ -16,5 +16,5 @@ resource "azuread_application_federated_identity_credential" "github_main" {
   description    = "GitHub Actions OIDC trust for AZ-01 main branch"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:nagasesank/AZ-01-azure-workload-identity-security-lab:ref:refs/heads/main"
+  subject        = "repo:nagasesank@67413218/AZ-01-azure-workload-identity-security-lab@1348063865:ref:refs/heads/main"
 }
