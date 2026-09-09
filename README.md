@@ -97,6 +97,7 @@ Evidence follows a hierarchy of verified outputs, sanitized screenshots, and con
 - [Phase 4 runtime validation](docs/evidence/phase-4-runtime-validation.md)
 - [Phase 2 screenshots](docs/evidence/screenshots/phase-2/)
 - [Phase 3 screenshots](docs/evidence/screenshots/phase-3/)
+- [Phase 4 screenshots](docs/evidence/screenshots/phase-4/)
 
 ## Repository Structure
 

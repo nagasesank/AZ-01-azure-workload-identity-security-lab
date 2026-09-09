@@ -18,6 +18,8 @@ Phase 3 evidence is the immutable vulnerable-state baseline except for factual o
 
 [Phase 4 runtime validation](phase-4-runtime-validation.md) records the successful manual GitHub OIDC authentication and metadata-only read validation against the known synthetic blob. Raw workflow logs are not copied because expanded action inputs can expose identifiers.
 
+The inspected [Phase 4 screenshots](screenshots/phase-4/) support the successful authentication, intended read, and cleanup results. They do not establish Phase 5 authorization-denial results.
+
 ## Future Evidence
 
 Phase 5 evidence will record post-remediation authorization and re-attack results. Those tests have not been run, and no future results are created in advance.

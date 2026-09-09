@@ -13,6 +13,14 @@ The following assertions are verified from the completed GitHub Actions job:
 | Azure CLI session cleanup ran | PASS | The always-run logout step and post-authentication cleanup completed successfully. |
 | Workflow completed without an uploaded evidence artifact | PASS | The run reported no artifacts; raw logs are intentionally not copied into the repository. |
 
+## Screenshot Inventory
+
+| Screenshot | What it shows |
+| --- | --- |
+| [01-oidc-workflow-success.png](screenshots/phase-4/01-oidc-workflow-success.png) | The manual Phase 4 OIDC Validation run on `main` completed successfully, including GitHub OIDC authentication, authentication confirmation, known synthetic-blob read validation, Azure CLI logout, and post-authentication cleanup. |
+
+This image is a crop of the owner's `phase-4-github-oidc-validation-success.png` capture. Cropping removes local shell paths and surrounding command output; retained result pixels are unchanged. One image covers the successful run and its named steps. Public GitHub Actions run/job references remain for traceability; they are not Azure identifiers or immutable repository/owner IDs. No raw workflow-log file is included.
+
 ## Security Interpretation
 
 This run verifies secretless GitHub OIDC authentication and intended read access to the known private synthetic blob. The validation command did not print blob contents and did not mutate Azure resources.
