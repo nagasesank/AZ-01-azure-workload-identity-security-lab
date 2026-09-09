@@ -99,7 +99,7 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 
 **Future work**
 
-- Phase 6 CI/CD security controls.
+- [Phase 6 CI/CD security controls](docs/implementation/phase-6-cicd-security-plan.md): security control plan prepared; implementation pending.
 - Final retrospective and project closeout after Phase 6.
 
 ## Evidence
@@ -184,7 +184,7 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 3 - Credential-compromise validation | Complete |
 | 4 - GitHub OIDC + least privilege | Complete (GitHub OIDC authentication and intended synthetic blob metadata read validated) |
 | 5 - Re-attack/security validation | Complete (bounded post-remediation authorization validation and evidence review complete) |
-| 6 - CI/CD security controls | Not Started |
+| 6 - CI/CD security controls | In Progress (security control plan prepared; implementation pending) |
 | 7 - Evidence/cleanup/retrospective | Teardown/cleanup evidence complete; retrospective pending |
 
 ## Current Status
@@ -194,7 +194,7 @@ Phase 3: COMPLETE
 Phase 4: COMPLETE
 Phase 5: POST-REMEDIATION VALIDATION COMPLETE
 Phase 5 evidence review: COMPLETE
-Phase 6: NOT STARTED
+Phase 6: SECURITY CONTROL PLAN PREPARED; IMPLEMENTATION PENDING
 Phase 7 teardown/cleanup evidence: COMPLETE
 Final retrospective/project closeout: PENDING
 Current AZ-01 Azure validation environment: DESTROYED

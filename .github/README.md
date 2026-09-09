@@ -6,6 +6,6 @@ The workflow is manual-only and does not run on push, pull request, or a schedul
 
 After Phase 5 evidence review and Terraform teardown, the Phase 5 repository secrets used to supply the Azure identifiers to the workflow were removed and verified absent. The teardown record is in [Phase 7 teardown validation](../docs/evidence/phase-7-teardown-validation.md).
 
-Phase 6 will address broader CI/CD security controls. That work has not started yet.
+The [Phase 6 CI/CD security controls plan](../docs/implementation/phase-6-cicd-security-plan.md) is prepared; implementation and validation remain pending. This documentation-only change creates no CI workflow, ruleset, or security setting. The plan preserves historical Phase 4/5 workflow source and proposes owner-operated disablement after implementation review, plus exact stale Phase 4 variable cleanup after owner review. Planning has no Azure runtime dependency.
 
 Return to the [project README](../README.md).
