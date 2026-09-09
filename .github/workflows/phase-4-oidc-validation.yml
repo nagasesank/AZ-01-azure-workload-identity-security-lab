@@ -1,0 +1,44 @@
+name: Phase 4 OIDC Validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate-oidc-read-access:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Authenticate with GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Confirm OIDC authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "[PASS] GitHub OIDC authentication succeeded."
+
+      - name: Validate container-scoped synthetic blob read access
+        shell: bash
+        run: |
+          set -euo pipefail
+          az storage blob show \
+            --account-name "${{ vars.AZ01_STORAGE_ACCOUNT }}" \
+            --container-name "synthetic-data" \
+            --name "az01-synthetic-data.txt" \
+            --auth-mode login \
+            --only-show-errors \
+            --output none
+          echo "[PASS] Container-scoped synthetic blob read authorization succeeded."
+
+      - name: Clean up Azure CLI session
+        if: always()
+        shell: bash
+        run: az logout --only-show-errors

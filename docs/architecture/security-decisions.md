@@ -33,3 +33,21 @@ The final implementation uses Microsoft Entra workload identity federation. It m
 **Decision:** Later implementation will use `hashicorp/azuread` for Microsoft Entra identity objects, including the Entra application, service principal, temporary vulnerable-phase application/client password, and federated identity credential. It will use `hashicorp/azurerm` for Azure resource-plane objects, including resource groups, storage resources, Azure RBAC role assignments, and other Azure resources.
 
 **Reason:** Explicit provider ownership keeps identity-plane and resource-plane configuration clear, reviewable, and Terraform-managed. This decision does not add the `azuread` provider or create any resources in Phase 1.
+
+## ADR-008 - Container-Scoped Read Authorization
+
+**Decision:** The remediated workload identity receives only `Storage Blob Data Reader` at the exact synthetic-data container Resource Manager scope.
+
+**Reason:** The intended workload function is read-only access to synthetic blob data. Management-plane resource enumeration or mutation and write access are not required. Container scope minimizes both the action set and resource scope. The workload identity receives no role assignment on the negative-control resource group.
+
+## ADR-009 - Exact GitHub OIDC Trust Tuple
+
+**Decision:** The Phase 4 federated credential trusts only this tuple:
+
+- Issuer: `https://token.actions.githubusercontent.com`
+- Audience: `api://AzureADTokenExchange`
+- Subject: `repo:nagasesank/AZ-01-azure-workload-identity-security-lab:ref:refs/heads/main`
+
+**Reason:** The issuer establishes GitHub as the token source, the audience limits token exchange, and the exact subject limits trust to this repository's `main` branch. No repository wildcard, pull-request subject, tag wildcard, environment wildcard, organization-wide trust, or additional branch subject is allowed.
+
+GitHub OIDC federation answers, "Which external workload can obtain a Microsoft Entra token?" Azure RBAC answers, "What can that authenticated principal do?" The Phase 4 remediation requires both independent controls.
