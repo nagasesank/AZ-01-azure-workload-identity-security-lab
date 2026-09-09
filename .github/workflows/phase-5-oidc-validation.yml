@@ -1,0 +1,374 @@
+name: Phase 5 OIDC Re-attack Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_rt03:
+        description: "Enable RT-03 management-plane tag mutation denial probe"
+        required: true
+        default: false
+        type: boolean
+
+      enable_rt04w:
+        description: "Enable RT-04W synthetic blob write denial probe"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate-post-remediation-boundaries:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate dispatch guardrails
+        shell: bash
+        env:
+          RUN_RT03: ${{ inputs.enable_rt03 }}
+          RUN_RT04W: ${{ inputs.enable_rt04w }}
+        run: |
+          set -euo pipefail
+          set +x
+
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Phase 5 runtime validation is permitted only from main."
+            exit 1
+          fi
+
+          if [[ "$RUN_RT03" == "true" && "$RUN_RT04W" == "true" ]]; then
+            echo "::error::RT-03 and RT-04W must not run in the same dispatch."
+            exit 1
+          fi
+
+          if [[ "${RUNNER_DEBUG:-0}" == "1" ]]; then
+            echo "::error::Runner debug logging must be disabled for Phase 5 validation."
+            exit 1
+          fi
+
+      - name: Prepare isolated Azure CLI profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          cli_dir="${RUNNER_TEMP}/az01-phase5-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "$cli_dir"
+
+          echo "AZURE_CONFIG_DIR=$cli_dir" >> "$GITHUB_ENV"
+          echo "AZURE_CORE_COLLECT_TELEMETRY=false" >> "$GITHUB_ENV"
+
+      - name: Authenticate with GitHub OIDC
+        id: azure_login
+        continue-on-error: true
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Run bounded Phase 5 validation
+        if: always()
+        shell: bash
+        env:
+          AZURE_LOGIN_OUTCOME: ${{ steps.azure_login.outcome }}
+
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZ01_STORAGE_ACCOUNT: ${{ secrets.AZ01_STORAGE_ACCOUNT }}
+
+          AZ01_WORKLOAD_RG: rg-az01-workload-lab
+          AZ01_NEGATIVE_RG: rg-az01-negative-control
+          AZ01_CONTAINER: synthetic-data
+          AZ01_BLOB: az01-synthetic-data.txt
+          AZ01_CANARY: id-az01-negative-control-canary
+
+          AZ01_PROBE_TAG: az01_phase5_probe
+          AZ01_PROBE_TAG_VALUE: phase5-temporary-probe
+          AZ01_WRITE_PROBE: az01-phase5-write-probe.txt
+
+          RUN_RT03: ${{ inputs.enable_rt03 }}
+          RUN_RT04W: ${{ inputs.enable_rt04w }}
+
+        run: |
+          set -euo pipefail
+          set +x
+
+          declare -A RESULTS=(
+            ["RT-01"]="NOT RUN"
+            ["RT-02"]="NOT RUN"
+            ["RT-03"]="NOT RUN"
+            ["RT-04R"]="NOT RUN"
+            ["RT-04W"]="NOT RUN"
+            ["RT-05"]="NOT RUN"
+            ["RT-06"]="NOT RUN"
+          )
+
+          scratch="$(mktemp -d "${RUNNER_TEMP}/az01-phase5-results.XXXXXX")"
+
+          cleanup_scratch() {
+            rm -rf -- "$scratch"
+          }
+
+          trap cleanup_scratch EXIT
+
+          emit_results() {
+            printf 'RT-01: %s\n' "${RESULTS["RT-01"]}"
+            printf 'RT-02: %s\n' "${RESULTS["RT-02"]}"
+            printf 'RT-03: %s\n' "${RESULTS["RT-03"]}"
+            printf 'RT-04R: %s\n' "${RESULTS["RT-04R"]}"
+            printf 'RT-04W: %s\n' "${RESULTS["RT-04W"]}"
+            printf 'RT-05: %s\n' "${RESULTS["RT-05"]}"
+            printf 'RT-06: %s\n' "${RESULTS["RT-06"]}"
+          }
+
+          stop_validation() {
+            emit_results
+            exit 1
+          }
+
+          expect_authorization_denial() {
+            local label="$1"
+            shift
+
+            local stdout_file="${scratch}/${label}.stdout"
+            local stderr_file="${scratch}/${label}.stderr"
+            local exit_code
+            local error_text
+
+            set +e
+            "$@" >"$stdout_file" 2>"$stderr_file"
+            exit_code=$?
+            set -e
+
+            if [[ $exit_code -eq 0 ]]; then
+              RESULTS["$label"]="FAIL"
+              return 1
+            fi
+
+            error_text="$(cat "$stderr_file")"
+
+            if grep -Eq \
+              '(^|[^[:alnum:]_])(AuthorizationFailed|AuthorizationPermissionMismatch)([^[:alnum:]_]|$)' \
+              <<<"$error_text"; then
+
+              RESULTS["$label"]="PASS"
+              unset error_text
+              return 0
+            fi
+
+            RESULTS["$label"]="INCONCLUSIVE"
+            unset error_text
+            return 1
+          }
+
+          run_positive_control() {
+            az storage blob show \
+              --account-name "$AZ01_STORAGE_ACCOUNT" \
+              --container-name "$AZ01_CONTAINER" \
+              --name "$AZ01_BLOB" \
+              --auth-mode login \
+              --only-show-errors \
+              --output none \
+              >"${scratch}/positive.stdout" \
+              2>"${scratch}/positive.stderr"
+          }
+
+          #
+          # RT-01 — GitHub OIDC authentication and intended identity
+          #
+
+          if [[ "$AZURE_LOGIN_OUTCOME" != "success" ]]; then
+            RESULTS["RT-01"]="INCONCLUSIVE"
+            stop_validation
+          fi
+
+          set +e
+
+          az account show \
+            --only-show-errors \
+            --query '[id,tenantId,user.name,user.type]' \
+            --output tsv \
+            >"${scratch}/rt01.stdout" \
+            2>"${scratch}/rt01.stderr"
+
+          rt01_exit=$?
+
+          set -e
+
+          if [[ $rt01_exit -ne 0 ]]; then
+            RESULTS["RT-01"]="INCONCLUSIVE"
+            stop_validation
+          fi
+
+          IFS=$'\t' read -r \
+            actual_subscription \
+            actual_tenant \
+            actual_identity \
+            actual_type \
+            <"${scratch}/rt01.stdout"
+
+          if [[ -z "${actual_subscription:-}" ||
+                -z "${actual_tenant:-}" ||
+                -z "${actual_identity:-}" ||
+                -z "${actual_type:-}" ]]; then
+
+            RESULTS["RT-01"]="INCONCLUSIVE"
+            stop_validation
+          fi
+
+          if [[ "${actual_subscription,,}" != "${AZURE_SUBSCRIPTION_ID,,}" ||
+                "${actual_tenant,,}" != "${AZURE_TENANT_ID,,}" ||
+                "${actual_identity,,}" != "${AZURE_CLIENT_ID,,}" ||
+                "$actual_type" != "servicePrincipal" ]]; then
+
+            RESULTS["RT-01"]="FAIL"
+            stop_validation
+          fi
+
+          RESULTS["RT-01"]="PASS"
+
+          #
+          # RT-04R positive control — first execution
+          #
+
+          RESULTS["RT-04R"]="INCONCLUSIVE"
+
+          if ! run_positive_control; then
+            stop_validation
+          fi
+
+          #
+          # RT-02 — workload RG enumeration must be denied
+          #
+
+          if ! expect_authorization_denial \
+            "RT-02" \
+            az resource list \
+              --resource-group "$AZ01_WORKLOAD_RG" \
+              --only-show-errors \
+              --output none; then
+
+            stop_validation
+          fi
+
+          #
+          # RT-05 — negative-control canary access must be denied
+          #
+
+          if ! expect_authorization_denial \
+            "RT-05" \
+            az identity show \
+              --resource-group "$AZ01_NEGATIVE_RG" \
+              --name "$AZ01_CANARY" \
+              --only-show-errors \
+              --output none; then
+
+            stop_validation
+          fi
+
+          #
+          # RT-06 — account-level container listing must be denied
+          #
+
+          if ! expect_authorization_denial \
+            "RT-06" \
+            az storage container list \
+              --account-name "$AZ01_STORAGE_ACCOUNT" \
+              --auth-mode login \
+              --only-show-errors \
+              --output none; then
+
+            stop_validation
+          fi
+
+          #
+          # RT-03 — optional management-plane mutation denial probe
+          #
+
+          if [[ "$RUN_RT03" == "true" ]]; then
+
+            if ! expect_authorization_denial \
+              "RT-03" \
+              az group update \
+                --name "$AZ01_WORKLOAD_RG" \
+                --set "tags.${AZ01_PROBE_TAG}=${AZ01_PROBE_TAG_VALUE}" \
+                --only-show-errors \
+                --output none; then
+
+              stop_validation
+            fi
+          fi
+
+          #
+          # RT-04W — optional dedicated synthetic blob write denial probe
+          #
+
+          if [[ "$RUN_RT04W" == "true" ]]; then
+
+            probe_file="${scratch}/write-probe.txt"
+
+            printf '%s\n' \
+              'AZ-01 Phase 5 dedicated synthetic write-denial probe.' \
+              >"$probe_file"
+
+            if ! expect_authorization_denial \
+              "RT-04W" \
+              az storage blob upload \
+                --account-name "$AZ01_STORAGE_ACCOUNT" \
+                --container-name "$AZ01_CONTAINER" \
+                --name "$AZ01_WRITE_PROBE" \
+                --file "$probe_file" \
+                --auth-mode login \
+                --overwrite false \
+                --only-show-errors \
+                --output none; then
+
+              rm -f -- "$probe_file"
+              stop_validation
+            fi
+
+            rm -f -- "$probe_file"
+          fi
+
+          #
+          # RT-04R positive control — second execution
+          #
+
+          if ! run_positive_control; then
+            RESULTS["RT-04R"]="INCONCLUSIVE"
+            stop_validation
+          fi
+
+          RESULTS["RT-04R"]="PASS"
+
+          emit_results
+
+      - name: Clean up Azure CLI session
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          set +x
+
+          cleanup_failed=0
+
+          if command -v az >/dev/null 2>&1; then
+            az logout --only-show-errors >/dev/null 2>&1 || cleanup_failed=1
+          fi
+
+          if [[ -n "${AZURE_CONFIG_DIR:-}" &&
+                -d "$AZURE_CONFIG_DIR" ]]; then
+
+            rm -rf -- "$AZURE_CONFIG_DIR" || cleanup_failed=1
+          fi
+
+          if [[ $cleanup_failed -eq 0 ]]; then
+            echo "CLEANUP: PASS"
+          else
+            echo "CLEANUP: FAIL"
+            exit 1
+          fi
