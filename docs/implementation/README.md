@@ -4,7 +4,7 @@
 - [Phase 4 secretless OIDC and least-privilege remediation](phase-4-remediation.md)
 - [Phase 6 CI/CD security controls plan](phase-6-cicd-security-plan.md)
 - [Phase 6 CI/CD security controls implementation](phase-6-cicd-security-controls.md)
-- [Phase 6 controlled failure validation](phase-6-controlled-failure-validation.md)
+- [Phase 6 controlled failure validation](phase-6-controlled-failure-validation.md) — COMPLETE.
 
 Phase 2 contains the verified vulnerable implementation record. The associated infrastructure was destroyed after Phase 3 evidence capture.
 
