@@ -164,7 +164,6 @@ function Get-PrincipalRoleAssignments {
         "--scope",
         $Scope,
         "--include-inherited",
-        "--all",
         "--fill-principal-name",
         "false"
     )
@@ -191,7 +190,6 @@ function Get-UserApplicableRoleAssignments {
         $Scope,
         "--include-inherited",
         "--include-groups",
-        "--all",
         "--fill-principal-name",
         "false"
     )
