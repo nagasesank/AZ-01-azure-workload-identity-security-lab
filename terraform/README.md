@@ -1,16 +1,16 @@
 # Terraform Guide
 
-Terraform is the configuration source of truth for AZ-01. The Phase 2/3 vulnerable lab resources were intentionally destroyed after testing; Phase 4 remediation has not started.
+Terraform is the configuration source of truth for AZ-01. The Phase 2/3 vulnerable lab resources were intentionally destroyed after testing. Phase 4 prepares a fresh remediated deployment; runtime validation has not started.
 
 ## Configuration
 
 - Terraform version: `>= 1.10.0`.
 - Providers: `hashicorp/azurerm` (`~> 4.0`), `hashicorp/azuread` (`~> 3.0`), and `hashicorp/random` (`~> 3.0`).
 - AzureRM manages resource-plane objects such as resource groups, storage, and RBAC assignments.
-- AzureAD manages the Microsoft Entra application, service principal, and temporary vulnerable-phase password.
+- AzureAD manages the Microsoft Entra application, service principal, and GitHub main-branch federated identity credential.
 - Random provides the generated storage-account suffix.
 
-The configuration defines project-owned workload and negative-control resource groups, a private synthetic-data storage path, a benign canary identity, and deliberately vulnerable lab-scoped role assignments. Output values include named resources and sensitive authentication context or temporary credential values. Do not print, publish, or commit sensitive output values.
+The configuration defines project-owned workload and negative-control resource groups, a private synthetic-data storage path, a benign canary identity, a secretless GitHub OIDC trust, and container-scoped workload read authorization. Output values include named resources and sensitive authentication context values. Do not print, publish, or commit sensitive output values.
 
 ## Local Authentication and Workflow
 
@@ -23,6 +23,6 @@ terraform validate
 terraform plan
 ```
 
-Terraform apply and destroy are owner-operated actions. Never commit Terraform state, generated plans, `.tfvars` files containing real data, credentials, or provider cache content. Do not use sensitive outputs as documentation examples.
+Terraform apply and destroy are owner-operated actions. Never commit Terraform state, generated plans, `.tfvars` files containing real data, credentials, or provider cache content. Do not use sensitive outputs as documentation examples. No Phase 4 apply or runtime validation has been performed by this repository change.
 
 See [scripts/README.md](../scripts/README.md) for the corresponding local validation helpers and return to the [project README](../README.md).

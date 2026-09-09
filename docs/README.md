@@ -18,4 +18,6 @@ Design -> implementation -> validation -> evidence -> remediation -> revalidatio
 
 Phase 3 evidence is the vulnerable, pre-remediation baseline. Future Phase 4 and Phase 5 evidence must remain separate so historical results are not confused with remediation results.
 
+Phase 4 implementation is prepared for owner-operated deployment and runtime validation. Phase 5 remains future post-remediation validation work.
+
 Return to the [project README](../README.md) for the project overview and current status.

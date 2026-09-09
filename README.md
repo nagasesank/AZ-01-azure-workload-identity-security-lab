@@ -8,7 +8,7 @@ AZ-01 is a controlled Azure security-engineering lab that records a deliberately
 
 The lab models the risk of a long-lived Microsoft Entra service-principal credential combined with excessive Azure RBAC. Phase 3 validated a controlled credential-compromise path only against project-owned resources and synthetic data. Terraform is the infrastructure source of truth.
 
-The upcoming remediation work will replace the long-lived credential with Microsoft Entra workload identity federation and GitHub OIDC, reduce authorization scope, and re-run the controlled tests. Phase 4 remediation is not implemented.
+Phase 4 Terraform and workflow implementation prepare Microsoft Entra workload identity federation, GitHub OIDC, and reduced authorization scope. Runtime deployment and validation are pending.
 
 ## Security Problem
 
@@ -33,21 +33,22 @@ Long-lived client secret
         -> excessive Azure RBAC
         -> controlled credential compromise
         -> excessive authorized actions demonstrated
-        -> remove long-lived credential                 [Phase 4/5 future work]
-        -> GitHub OIDC                                  [Phase 4/5 future work]
-        -> Entra federated identity credential          [Phase 4/5 future work]
-        -> least-privilege RBAC                         [Phase 4/5 future work]
-        -> repeat attack tests                          [Phase 4/5 future work]
-        -> unauthorized actions denied                  [Phase 4/5 future work]
+        -> remove long-lived credential                 [Phase 4 prepared]
+        -> GitHub OIDC                                  [Phase 4 prepared]
+        -> Entra federated identity credential          [Phase 4 prepared]
+        -> least-privilege RBAC                         [Phase 4 prepared]
+        -> repeat attack tests                          [Phase 5 future work]
+        -> unauthorized actions denied                  [Phase 5 future work]
 ```
 
 ## Architecture
 
-The verified vulnerable design contains a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary. Federation remediation is future work.
+The verified vulnerable design contained a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary. Phase 4 now prepares a fresh secretless redeployment with GitHub OIDC and container-scoped read access; runtime validation is pending.
 
 - [Architecture index](docs/architecture/README.md)
 - [Phase 1 architecture](docs/architecture/phase-1-architecture.md)
 - [Security decisions](docs/architecture/security-decisions.md)
+- [Phase 4 remediation](docs/implementation/phase-4-remediation.md)
 
 ## Threat Model
 
@@ -82,8 +83,7 @@ Phase 3 validated only known project-owned targets. No arbitrary subscription en
 
 **Future work**
 
-- GitHub OIDC and Microsoft Entra federated identity credentials.
-- Least-privilege Azure RBAC.
+- Phase 4 owner-operated deployment and OIDC validation.
 - Post-remediation re-attack and security validation.
 - CI/CD security controls and final retrospective.
 
@@ -124,7 +124,7 @@ Each documentation area has an index: [docs](docs/README.md), [architecture](doc
 - Microsoft Entra ID and Azure RBAC
 - Azure Storage with synthetic data only
 - PowerShell
-- GitHub Actions and GitHub OIDC as future work
+- GitHub Actions manual OIDC validation workflow, pending runtime validation
 
 ## Local Prerequisites
 
@@ -161,7 +161,7 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 | 1 - Architecture/threat modeling | Complete |
 | 2 - Vulnerable identity infrastructure | Complete |
 | 3 - Credential-compromise validation | Complete |
-| 4 - GitHub OIDC + least privilege | Not Started |
+| 4 - GitHub OIDC + least privilege | In Progress (runtime validation pending) |
 | 5 - Re-attack/security validation | Not Started |
 | 6 - CI/CD security controls | Not Started |
 | 7 - Evidence/cleanup/retrospective | Not Started |
@@ -171,5 +171,5 @@ The lab avoids VM-heavy architecture and uses small synthetic resources only. In
 ```text
 Phase 3: COMPLETE
 Azure resources: DESTROYED
-Phase 4: NOT STARTED
+Phase 4: IMPLEMENTATION PREPARED; RUNTIME VALIDATION PENDING
 ```

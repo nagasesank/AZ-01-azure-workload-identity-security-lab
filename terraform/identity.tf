@@ -1,22 +1,20 @@
-resource "azuread_application" "vulnerable_workload" {
+resource "azuread_application" "workload" {
   display_name     = "az01-workload-identity-lab"
   sign_in_audience = "AzureADMyOrg"
   owners           = [data.azuread_client_config.current.object_id]
 }
 
-resource "azuread_service_principal" "vulnerable_workload" {
-  client_id = azuread_application.vulnerable_workload.client_id
+resource "azuread_service_principal" "workload" {
+  client_id = azuread_application.workload.client_id
   owners    = [data.azuread_client_config.current.object_id]
 }
 
-# This intentionally vulnerable credential is limited to the future controlled lab phase.
-resource "azuread_application_password" "vulnerable_workload" {
-  application_id = azuread_application.vulnerable_workload.id
-  display_name   = "az01-vulnerable-phase-temporary-password"
-  end_date       = timeadd(timestamp(), "168h")
-
-  # Preserve the initial seven-day expiry instead of extending it on later plans.
-  lifecycle {
-    ignore_changes = [end_date]
-  }
+# Trust only this repository's main branch to exchange a GitHub OIDC token.
+resource "azuread_application_federated_identity_credential" "github_main" {
+  application_id = azuread_application.workload.id
+  display_name   = "az01-github-main-oidc"
+  description    = "GitHub Actions OIDC trust for AZ-01 main branch"
+  audiences      = ["api://AzureADTokenExchange"]
+  issuer         = "https://token.actions.githubusercontent.com"
+  subject        = "repo:nagasesank/AZ-01-azure-workload-identity-security-lab:ref:refs/heads/main"
 }

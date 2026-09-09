@@ -52,13 +52,8 @@ output "negative_control_canary_name" {
   value       = azurerm_user_assigned_identity.negative_control_canary.name
 }
 
-output "vulnerable_application_client_id" {
-  description = "Client ID for later controlled authentication testing."
-  value       = azuread_application.vulnerable_workload.client_id
-}
-
-output "vulnerable_client_secret" {
-  description = "Temporary vulnerable-phase password. Terraform state containing this value is sensitive."
-  value       = azuread_application_password.vulnerable_workload.value
+output "workload_application_client_id" {
+  description = "Client ID for the final workload application."
+  value       = azuread_application.workload.client_id
   sensitive   = true
 }
