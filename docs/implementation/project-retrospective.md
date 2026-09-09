@@ -1,6 +1,6 @@
 # AZ-01 Project Retrospective
 
-Status: Retrospective prepared; final closeout review pending.
+Status: COMPLETE.
 
 ## Project objective
 
@@ -34,7 +34,7 @@ The known project-owned canary provided a concrete containment check in both the
 
 Repository-static CI covers formatting/schema validation, IaC scanning, and current-content secret scanning. [CF-01](phase-6-controlled-failure-validation.md) demonstrated rejection and formatting remediation of a runner-only fixture; normal workflow behavior was restored with zero net workflow change.
 
-[Repository hardening](phase-6-repository-hardening.md) adds verified main ruleset enforcement, confirms read-only Actions defaults, retires historical OIDC workflows through disablement, and removes unused repository variable names. Phase 6 repository controls are the final hardening layer, not a substitute for runtime evidence.
+[Repository hardening](phase-6-repository-hardening.md) adds verified main ruleset enforcement, confirms read-only Actions defaults, retires historical OIDC workflows through disablement, removes unused repository variable names, and keeps dependency major-version migrations behind explicit review. Phase 6 repository controls are the final hardening layer, not a substitute for runtime evidence.
 
 ## Key engineering decisions
 
@@ -67,6 +67,6 @@ A successful command and a secure outcome are different things: unexpected acces
 
 The Azure validation environment is destroyed. The client secret was not recreated. This remains a synthetic security lab with no production suitability claim. Phase 3/4/5 evidence remains historical; Phase 7 preserves teardown verification.
 
-Phase 6 repository controls are implemented and verified, and this retrospective captures the completed engineering work. Final evidence/closeout review remains pending in the open PR; the task does not merge or archive the repository. Future maintenance and any redeployment require deliberate review.
+Phase 6 repository controls are implemented and verified, the evidence/closeout review is complete, and this retrospective captures the completed engineering work. Historical Azure OIDC validation workflows are disabled, protected-main enforcement remains active, and future maintenance or redeployment requires deliberate review rather than assuming the 2026 runtime results remain current.
 
 Return to the [implementation index](README.md).
