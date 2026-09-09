@@ -20,6 +20,6 @@ Phase 3 evidence remains the immutable vulnerable, pre-remediation baseline exce
 
 Phase 4 OIDC authentication and intended synthetic-blob metadata read validation completed successfully on 2026-09-09. Phase 5 bounded post-remediation authorization validation and evidence review also completed on 2026-09-09. The later Phase 4/5 validation deployment was then destroyed and bounded cleanup verification completed; see the [Phase 7 teardown validation](evidence/phase-7-teardown-validation.md).
 
-Phase 6 broader CI/CD security controls remain future work.
+Phase 6 repository-first CI/CD security planning is in progress; see the [Phase 6 CI/CD security controls plan](implementation/phase-6-cicd-security-plan.md). Implementation and owner verification of security settings remain pending; planning requires no Azure deployment.
 
 Return to the [project README](../README.md) for the project overview and current status.
