@@ -177,7 +177,7 @@ jobs:
               2>"${scratch}/positive.stderr"
           }
 
-          #
+                    #
           # RT-01 — GitHub OIDC authentication and intended identity
           #
 
@@ -186,20 +186,23 @@ jobs:
             stop_validation
           fi
 
+          #
+          # Validate the subscription and tenant selected by Azure CLI.
+          #
           set +e
 
           az account show \
             --only-show-errors \
-            --query '[id,tenantId,user.name,user.type]' \
+            --query '[id,tenantId]' \
             --output tsv \
-            >"${scratch}/rt01.stdout" \
-            2>"${scratch}/rt01.stderr"
+            >"${scratch}/rt01-account.stdout" \
+            2>"${scratch}/rt01-account.stderr"
 
-          rt01_exit=$?
+          rt01_account_exit=$?
 
           set -e
 
-          if [[ $rt01_exit -ne 0 ]]; then
+          if [[ $rt01_account_exit -ne 0 ]]; then
             RESULTS["RT-01"]="INCONCLUSIVE"
             stop_validation
           fi
@@ -207,27 +210,126 @@ jobs:
           IFS=$'\t' read -r \
             actual_subscription \
             actual_tenant \
-            actual_identity \
-            actual_type \
-            <"${scratch}/rt01.stdout"
+            <"${scratch}/rt01-account.stdout"
 
           if [[ -z "${actual_subscription:-}" ||
-                -z "${actual_tenant:-}" ||
-                -z "${actual_identity:-}" ||
-                -z "${actual_type:-}" ]]; then
+                -z "${actual_tenant:-}" ]]; then
 
             RESULTS["RT-01"]="INCONCLUSIVE"
             stop_validation
           fi
 
           if [[ "${actual_subscription,,}" != "${AZURE_SUBSCRIPTION_ID,,}" ||
-                "${actual_tenant,,}" != "${AZURE_TENANT_ID,,}" ||
-                "${actual_identity,,}" != "${AZURE_CLIENT_ID,,}" ||
-                "$actual_type" != "servicePrincipal" ]]; then
+                "${actual_tenant,,}" != "${AZURE_TENANT_ID,,}" ]]; then
 
             RESULTS["RT-01"]="FAIL"
             stop_validation
           fi
+
+          #
+          # Obtain the current ARM access token privately so the authenticated
+          # application identity can be verified from token claims.
+          #
+          # The token and decoded claims remain only in the runner scratch
+          # directory and are never emitted to workflow output.
+          #
+          set +e
+
+          az account get-access-token \
+            --resource "https://management.azure.com/" \
+            --only-show-errors \
+            --query accessToken \
+            --output tsv \
+            >"${scratch}/rt01.token" \
+            2>"${scratch}/rt01-token.stderr"
+
+          rt01_token_exit=$?
+
+          set -e
+
+          if [[ $rt01_token_exit -ne 0 ||
+                ! -s "${scratch}/rt01.token" ]]; then
+
+            RESULTS["RT-01"]="INCONCLUSIVE"
+            stop_validation
+          fi
+
+          #
+          # Decode only the JWT payload locally.
+          #
+          # Azure access tokens may identify the calling application through
+          # appid or azp depending on token version.
+          #
+          set +e
+
+          python3 - \
+            "${scratch}/rt01.token" \
+            "${scratch}/rt01-claims.tsv" <<'PY'
+            import base64
+            import json
+            import sys
+
+            token_path = sys.argv[1]
+            claims_path = sys.argv[2]
+
+            with open(token_path, "r", encoding="utf-8") as handle:
+                token = handle.read().strip()
+
+            parts = token.split(".")
+            if len(parts) < 2:
+                raise SystemExit(1)
+
+            payload = parts[1]
+            payload += "=" * (-len(payload) % 4)
+
+            claims = json.loads(
+                base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8")
+            )
+
+            client_id = claims.get("appid") or claims.get("azp")
+            tenant_id = claims.get("tid")
+
+            if not client_id or not tenant_id:
+                raise SystemExit(1)
+
+            with open(claims_path, "w", encoding="utf-8") as handle:
+                handle.write(f"{client_id}\t{tenant_id}\n")
+            PY
+
+                    rt01_decode_exit=$?
+
+                    set -e
+
+                    rm -f -- "${scratch}/rt01.token"
+
+                    if [[ $rt01_decode_exit -ne 0 ||
+                            ! -s "${scratch}/rt01-claims.tsv" ]]; then
+
+                        RESULTS["RT-01"]="INCONCLUSIVE"
+                        stop_validation
+                    fi
+
+                    IFS=$'\t' read -r \
+                        token_client_id \
+                        token_tenant_id \
+                        <"${scratch}/rt01-claims.tsv"
+
+                    if [[ -z "${token_client_id:-}" ||
+                            -z "${token_tenant_id:-}" ]]; then
+
+                        RESULTS["RT-01"]="INCONCLUSIVE"
+                        stop_validation
+                    fi
+
+                    if [[ "${token_client_id,,}" != "${AZURE_CLIENT_ID,,}" ||
+                            "${token_tenant_id,,}" != "${AZURE_TENANT_ID,,}" ]]; then
+
+                        RESULTS["RT-01"]="FAIL"
+                        stop_validation
+                    fi
+
+                    unset token_client_id
+                    unset token_tenant_id
 
           RESULTS["RT-01"]="PASS"
 
