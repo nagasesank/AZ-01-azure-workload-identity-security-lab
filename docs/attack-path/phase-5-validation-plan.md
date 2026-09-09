@@ -1,6 +1,6 @@
 # Phase 5 Post-Remediation Validation Plan
 
-Status: planning started; harness implementation and runtime execution pending.
+Status: validation plan approved; harness implementation in progress; runtime execution pending.
 
 ## Baseline and Identity Boundary
 
@@ -63,6 +63,7 @@ RT-03 and RT-04W are real mutation attempts: expected denial does not guarantee 
 - Emit only fixed test labels and PASS / FAIL / INCONCLUSIVE / NOT RUN outcomes. Unexpected success is FAIL, never a passing command execution.
 - Exit nonzero for FAIL or INCONCLUSIVE; always clean up the workload CLI session/profile. Cleanup failure also blocks acceptance. Do not auto-retry mutation attempts.
 - Do not upload raw logs, CLI caches, state, plans, or token-bearing artifacts.
+- Phase 5 runtime identifier/configuration values are supplied through GitHub Actions secrets so runner logging masks them automatically. They remain identifiers rather than authentication secrets; this is an evidence-hygiene control. Do not interpolate repository-variable values into shell source before masking.
 
 ## Acceptance and Evidence
 
