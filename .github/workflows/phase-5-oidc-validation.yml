@@ -177,7 +177,7 @@ jobs:
               2>"${scratch}/positive.stderr"
           }
 
-                    #
+          #
           # RT-01 — GitHub OIDC authentication and intended identity
           #
 
@@ -265,71 +265,71 @@ jobs:
           python3 - \
             "${scratch}/rt01.token" \
             "${scratch}/rt01-claims.tsv" <<'PY'
-            import base64
-            import json
-            import sys
+          import base64
+          import json
+          import sys
 
-            token_path = sys.argv[1]
-            claims_path = sys.argv[2]
+          token_path = sys.argv[1]
+          claims_path = sys.argv[2]
 
-            with open(token_path, "r", encoding="utf-8") as handle:
-                token = handle.read().strip()
+          with open(token_path, "r", encoding="utf-8") as handle:
+              token = handle.read().strip()
 
-            parts = token.split(".")
-            if len(parts) < 2:
-                raise SystemExit(1)
+          parts = token.split(".")
+          if len(parts) < 2:
+              raise SystemExit(1)
 
-            payload = parts[1]
-            payload += "=" * (-len(payload) % 4)
+          payload = parts[1]
+          payload += "=" * (-len(payload) % 4)
 
-            claims = json.loads(
-                base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8")
-            )
+          claims = json.loads(
+              base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8")
+          )
 
-            client_id = claims.get("appid") or claims.get("azp")
-            tenant_id = claims.get("tid")
+          client_id = claims.get("appid") or claims.get("azp")
+          tenant_id = claims.get("tid")
 
-            if not client_id or not tenant_id:
-                raise SystemExit(1)
+          if not client_id or not tenant_id:
+              raise SystemExit(1)
 
-            with open(claims_path, "w", encoding="utf-8") as handle:
-                handle.write(f"{client_id}\t{tenant_id}\n")
-            PY
+          with open(claims_path, "w", encoding="utf-8") as handle:
+              handle.write(f"{client_id}\t{tenant_id}\n")
+          PY
 
-                    rt01_decode_exit=$?
+          rt01_decode_exit=$?
 
-                    set -e
+          set -e
 
-                    rm -f -- "${scratch}/rt01.token"
+          rm -f -- "${scratch}/rt01.token"
 
-                    if [[ $rt01_decode_exit -ne 0 ||
-                            ! -s "${scratch}/rt01-claims.tsv" ]]; then
+          if [[ $rt01_decode_exit -ne 0 ||
+                ! -s "${scratch}/rt01-claims.tsv" ]]; then
 
-                        RESULTS["RT-01"]="INCONCLUSIVE"
-                        stop_validation
-                    fi
+            RESULTS["RT-01"]="INCONCLUSIVE"
+            stop_validation
+          fi
 
-                    IFS=$'\t' read -r \
-                        token_client_id \
-                        token_tenant_id \
-                        <"${scratch}/rt01-claims.tsv"
+          IFS=$'\t' read -r \
+            token_client_id \
+            token_tenant_id \
+            <"${scratch}/rt01-claims.tsv"
 
-                    if [[ -z "${token_client_id:-}" ||
-                            -z "${token_tenant_id:-}" ]]; then
+          if [[ -z "${token_client_id:-}" ||
+                -z "${token_tenant_id:-}" ]]; then
 
-                        RESULTS["RT-01"]="INCONCLUSIVE"
-                        stop_validation
-                    fi
+            RESULTS["RT-01"]="INCONCLUSIVE"
+            stop_validation
+          fi
 
-                    if [[ "${token_client_id,,}" != "${AZURE_CLIENT_ID,,}" ||
-                            "${token_tenant_id,,}" != "${AZURE_TENANT_ID,,}" ]]; then
+          if [[ "${token_client_id,,}" != "${AZURE_CLIENT_ID,,}" ||
+                "${token_tenant_id,,}" != "${AZURE_TENANT_ID,,}" ]]; then
 
-                        RESULTS["RT-01"]="FAIL"
-                        stop_validation
-                    fi
+            RESULTS["RT-01"]="FAIL"
+            stop_validation
+          fi
 
-                    unset token_client_id
-                    unset token_tenant_id
+          unset token_client_id
+          unset token_tenant_id
 
           RESULTS["RT-01"]="PASS"
 
