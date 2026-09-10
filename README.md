@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="docs/assets/az01-banner.png" alt="AZ-01 Azure Workload Identity Attack and Secretless Federation Lab" width="100%" />
-</p>
+![AZ-01 Azure Workload Identity Attack & Secretless Federation Lab](docs/assets/az01-banner.png)
 
 # Azure Workload Identity Security Engineering Project
 
