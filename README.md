@@ -33,6 +33,10 @@ The project deliberately created a vulnerable Microsoft Entra workload identity 
 
 The lab uses **synthetic data and project-owned Azure resources only**. It does not claim production suitability, universal least privilege, penetration testing coverage, HIPAA/HITRUST compliance, or broad Azure security assurance.
 
+<p align="center">
+  <img src="docs/assets/az01-project-overview.png" alt="AZ-01 project lifecycle covering credential risk, controlled attack validation, secretless remediation, least privilege, revalidation, teardown, and CI/CD hardening" width="100%" />
+</p>
+
 ## Project Objectives
 
 The primary objectives of this project are to:
@@ -229,6 +233,10 @@ Detailed architecture and design records:
 
 ## Technology Stack
 
+<p align="center">
+  <img src="docs/assets/az01-technology-stack.png" alt="AZ-01 technology stack grouped into cloud identity, infrastructure automation, and security validation tools" width="100%" />
+</p>
+
 ### Cloud and Identity
 
 | Technology | Purpose |
@@ -252,6 +260,10 @@ Detailed architecture and design records:
 | Trivy | IaC misconfiguration and current-content secret scanning |
 
 ## Repository Structure
+
+<p align="center">
+  <img src="docs/assets/az01-repository-structure.png" alt="AZ-01 repository layout showing GitHub workflows, documentation folders, scripts, and Terraform" width="100%" />
+</p>
 
 ```text
 AZ-01-azure-workload-identity-security-lab/
@@ -551,6 +563,10 @@ The following sanitized screenshots represent key stages of the security lifecyc
 **Figure 6:** Terraform destroy completed for the later validation deployment.
 
 ## Implementation Roadmap
+
+<p align="center">
+  <img src="docs/assets/az01-implementation-roadmap.png" alt="AZ-01 roadmap from Phase 0 Foundation through architecture, vulnerable infrastructure, controlled attack validation, OIDC and least privilege, re-attack validation, CI/CD hardening, and Phase 7 Teardown and Closeout" width="100%" />
+</p>
 
 ### Completed
 
