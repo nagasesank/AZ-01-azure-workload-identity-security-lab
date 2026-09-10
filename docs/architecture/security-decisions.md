@@ -50,4 +50,6 @@ The final implementation uses Microsoft Entra workload identity federation. It m
 
 **Reason:** The issuer establishes GitHub as the token source, the audience limits token exchange, and the exact immutable subject limits trust to this repository's `main` branch. GitHub's immutable subject format includes stable owner and repository IDs. No repository wildcard, pull-request subject, tag wildcard, environment wildcard, organization-wide trust, or additional branch subject is allowed.
 
+The OIDC tuple is intentionally public, non-secret trust metadata. Publishing it does not provide a credential or token; a valid GitHub-issued OIDC token that satisfies the configured trust conditions is still required for federation.
+
 GitHub OIDC federation answers, "Which external workload can obtain a Microsoft Entra token?" Azure RBAC answers, "What can that authenticated principal do?" The Phase 4 remediation requires both independent controls.
