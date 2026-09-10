@@ -2,282 +2,648 @@
   <img src="docs/assets/az01-banner.png" alt="AZ-01 Azure Workload Identity Attack and Secretless Federation Lab" width="100%" />
 </p>
 
-# AZ-01 — Azure Workload Identity Attack & Secretless Federation Lab
+# Azure Workload Identity Security Engineering Project
 
-> Attack workload identity. Remove long-lived secrets. Prove bounded least privilege. Preserve the evidence.
+> **Project Goal**
+>
+> Demonstrate how a long-lived Microsoft Entra workload credential and excessive Azure RBAC can create a practical identity attack path, then replace that design with GitHub OIDC, Microsoft Entra workload identity federation, reduced authorization scope, bounded re-attack validation, teardown verification, and repository-level DevSecOps controls.
 
-[![Phase 6 Security CI](https://github.com/nagasesank/AZ-01-azure-workload-identity-security-lab/actions/workflows/security-ci.yml/badge.svg)](https://github.com/nagasesank/AZ-01-azure-workload-identity-security-lab/actions/workflows/security-ci.yml)
+<p align="center">
 
-AZ-01 is a controlled Azure security-engineering lab that demonstrates how a copied Microsoft Entra workload credential and excessive Azure RBAC can combine into a practical attack path, then remediates that design with GitHub OIDC, Microsoft Entra workload identity federation, reduced authorization scope, bounded re-attack validation, teardown verification, and repository-level CI/CD hardening.
+![Terraform](https://img.shields.io/badge/Terraform-IaC-623CE4?style=for-the-badge&logo=terraform)
+![Microsoft Azure](https://img.shields.io/badge/Microsoft_Azure-Cloud-0078D4?style=for-the-badge&logo=microsoftazure)
+![Microsoft Entra](https://img.shields.io/badge/Microsoft_Entra-Identity-5E5CE6?style=for-the-badge&logo=microsoft)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?style=for-the-badge&logo=githubactions)
+![OIDC](https://img.shields.io/badge/OIDC-Workload_Federation-EB5424?style=for-the-badge&logo=openid)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-The project uses **synthetic data and project-owned Azure resources only**. It does not claim production suitability, universal least privilege, HIPAA/HITRUST compliance, or broad Azure security coverage.
+</p>
 
-## Executive Summary
+<p align="center">
+  <a href="https://github.com/nagasesank/AZ-01-azure-workload-identity-security-lab/actions/workflows/security-ci.yml">
+    <img src="https://github.com/nagasesank/AZ-01-azure-workload-identity-security-lab/actions/workflows/security-ci.yml/badge.svg" alt="Phase 6 Security CI" />
+  </a>
+</p>
 
-The vulnerable baseline used a long-lived Microsoft Entra service-principal credential with excessive Azure RBAC. Phase 3 demonstrated only the actions already authorized to that identity inside a bounded lab target set, including a controlled management-plane mutation and access to known synthetic data. A project-owned negative control was used to validate containment.
+## AZ-01 — Azure Workload Identity Attack & Secretless Federation Lab
 
-Phase 4 replaced the long-lived credential path with Microsoft Entra workload identity federation and GitHub OIDC, while reducing the workload authorization scope. Runtime validation confirmed successful OIDC authentication and the intended metadata-only synthetic-blob access.
+AZ-01 is a controlled, evidence-driven **Azure identity security engineering lab** focused on workload identity risk, credential exposure, Azure RBAC blast radius, secretless federation, and post-remediation authorization testing.
 
-Phase 5 then re-ran a bounded authorization test matrix. Intended access succeeded while the tested workload resource-group enumeration, benign tag mutation, synthetic blob creation, negative-control access, and account-level container listing received explicit authorization denials. These results apply only to the tested actions and known targets.
+The project deliberately created a vulnerable Microsoft Entra workload identity inside a bounded lab environment, validated the resulting attack path only against known project-owned targets, remediated the design with **GitHub OIDC + Microsoft Entra workload identity federation**, reduced authorization to the intended Azure Storage container scope, re-ran controlled positive and negative tests, destroyed the validation environment, and hardened the repository with static security CI and protected-main controls.
 
-The validation environment was subsequently destroyed. Phase 7 verified empty Terraform state and absence of the exact known project-owned Azure resources and workload identity objects. Phase 6 completed repository hardening with static security CI, a controlled CI negative-path test, protected-main rules, least-privilege GitHub Actions defaults, retirement of historical Azure/OIDC workflows, stale repository-variable cleanup, and a bounded Dependabot policy.
+The lab uses **synthetic data and project-owned Azure resources only**. It does not claim production suitability, universal least privilege, penetration testing coverage, HIPAA/HITRUST compliance, or broad Azure security assurance.
 
-**Current cloud state: the AZ-01 Azure validation environment is destroyed.**
+## Project Objectives
 
-## Key Results
+The primary objectives of this project are to:
 
-| Area | Verified outcome |
-| --- | --- |
-| Vulnerable baseline | Controlled credential-compromise path demonstrated against known project-owned targets |
-| Containment | Negative-control canary access denied |
-| Authentication remediation | GitHub OIDC + Microsoft Entra workload identity federation validated |
-| Authorization remediation | Intended synthetic-blob metadata access retained; tested excessive actions denied |
-| Teardown | Terraform state empty; exact known validation resources and workload identity objects absent |
-| CI/CD | Terraform static validation, IaC security scan, and current-content secret scan enforced |
-| CI negative path | CF-01 proved the formatting gate rejected a deliberately misformatted runner-only Terraform fixture and accepted remediation |
-| Repository hardening | `main` protected by PR + required checks; force-push/deletion blocked; Actions defaults verified read-only |
-| Historical runtime paths | Phase 4/5 Azure OIDC workflows disabled after evidence capture |
-| Dependency policy | Weekly patch/minor visibility retained; unsupported major-version updates require explicit review |
+- Model a realistic long-lived workload credential risk in Microsoft Entra ID.
+- Demonstrate the impact of excessive but bounded Azure RBAC.
+- Validate attack behavior without arbitrary subscription enumeration or production data access.
+- Use a project-owned negative control to prove authorization containment.
+- Replace persistent workload credentials with GitHub OIDC federation.
+- Reduce Azure authorization to the narrowest practical workload scope.
+- Re-run the security tests after remediation and classify denials explicitly.
+- Preserve sanitized, reviewable evidence for each validation phase.
+- Destroy cloud resources after the validation window.
+- Protect the validated source baseline with Terraform, IaC, secret-scanning, and repository controls.
 
-## Attack → Remediation → Closeout Lifecycle
+## Key Features
+
+### Workload Identity Security
+
+- Microsoft Entra application and service-principal modeling
+- Long-lived credential risk demonstration
+- GitHub OIDC federation
+- Microsoft Entra federated identity credential
+- Authentication and authorization treated as separate security controls
+
+### Controlled Attack Validation
+
+- Known project-owned targets only
+- Synthetic Azure Storage data
+- Dedicated negative-control resource group
+- Controlled management-plane mutation with restoration
+- Explicit authorization-denial classification
+- No destructive or arbitrary subscription-wide attack behavior
+
+### Least-Privilege Remediation
+
+- Persistent workload client-secret path removed
+- Container-scoped `Storage Blob Data Reader`
+- No workload Contributor role after remediation
+- No workload management-plane Reader role after remediation
+- No negative-control role assignment
+
+### Evidence-Driven Engineering
+
+- Phase-wise validation records
+- Sanitized screenshots
+- Positive and negative controls
+- Separate pre-remediation and post-remediation evidence
+- Terraform teardown verification
+- Conservative security claims tied to tested behavior
+
+### DevSecOps Hardening
+
+- Terraform formatting and validation gate
+- Trivy IaC security scanning
+- Trivy current-content secret scanning
+- Controlled CI negative-path test
+- Protected `main`
+- Read-only GitHub Actions defaults
+- Historical runtime workflows disabled after evidence capture
+- Dependabot policy with explicit review for major upgrades
+
+## Project Overview
+
+The project follows a complete security-engineering lifecycle rather than stopping after remediation.
 
 ```text
-Long-lived client secret
-        → Microsoft Entra application / service principal
-        → excessive Azure RBAC
-        → controlled credential compromise
-        → excessive authorized actions demonstrated
-        → vulnerable deployment destroyed
-        → fresh secretless deployment
-        → GitHub OIDC
-        → Entra federated identity credential
-        → reduced RBAC scope
-        → bounded post-remediation validation
-        → intended access succeeds
-        → tested excessive actions explicitly denied
-        → Terraform destroy
-        → bounded post-destroy verification
-        → static CI + controlled CI failure validation
-        → protected main + least-privilege Actions defaults
-        → historical OIDC workflows retired
-        → stale repository variables removed
-        → project closeout
+Design vulnerable workload identity
+        ↓
+Terraform deployment
+        ↓
+Validate vulnerable baseline
+        ↓
+Controlled credential-compromise tests
+        ↓
+Capture sanitized evidence
+        ↓
+Destroy vulnerable deployment
+        ↓
+Create fresh secretless validation deployment
+        ↓
+GitHub OIDC + Microsoft Entra federation
+        ↓
+Reduce Azure RBAC scope
+        ↓
+Run bounded post-remediation validation
+        ↓
+Verify intended access + explicit denials
+        ↓
+Terraform destroy
+        ↓
+Verify bounded cleanup
+        ↓
+Harden CI/CD + repository controls
+        ↓
+Project closeout
 ```
 
-## Security Engineering Objectives
+## Why This Project?
 
-- Model a vulnerable workload identity inside a dedicated lab boundary.
-- Validate a controlled credential-compromise path without arbitrary subscription enumeration.
-- Use project-owned negative controls to test authorization containment.
-- Replace long-lived workload credentials with federated identity.
-- Reduce Azure RBAC to the narrowest practical scope required by the workload.
-- Re-run controlled tests after remediation and classify denials explicitly.
-- Preserve sanitized, reviewable evidence.
-- Destroy cloud resources after validation windows.
-- Add CI/CD and repository controls that protect the validated source baseline.
+Workload identities are frequently used by applications and CI/CD systems to access cloud resources. A long-lived client secret can become a replayable credential if it is copied, leaked, logged, or stored incorrectly. If the associated service principal also has excessive permissions, credential compromise can produce a much larger authorization blast radius.
 
-## Architecture
+AZ-01 demonstrates the security difference between two distinct controls:
 
-The vulnerable design contained a Microsoft Entra application and service principal, a workload resource-group boundary, Azure RBAC, private synthetic storage, and a separate project-owned negative-control resource group with a benign canary.
+- **Authentication hardening:** replace a persistent secret with short-lived GitHub OIDC federation.
+- **Authorization hardening:** reduce Azure RBAC to only the resource and actions required by the workload.
 
-Phase 4 created a fresh secretless validation deployment using GitHub OIDC and a Microsoft Entra federated identity credential. Workload authorization was reduced to container-scoped read access before the Phase 5 re-attack matrix.
+The project then verifies those controls through runtime testing instead of assuming that a Terraform configuration is secure simply because it looks restrictive.
+
+## Repository Highlights
+
+| Category | Details |
+| --- | --- |
+| Cloud Provider | Microsoft Azure |
+| Identity Platform | Microsoft Entra ID |
+| Infrastructure as Code | Terraform |
+| Vulnerable Authentication | Temporary long-lived service-principal credential |
+| Remediated Authentication | GitHub OIDC + Microsoft Entra workload identity federation |
+| Authorization | Azure RBAC |
+| Intended Data Access | Container-scoped synthetic Azure Blob metadata/read path |
+| Negative Control | Separate project-owned resource group and canary identity |
+| Attack Validation | AT-01 through AT-05 |
+| Post-Remediation Validation | RT-01 through RT-06, including RT-04R/RT-04W separation |
+| CI/CD | Terraform validation, IaC scan, secret scan |
+| Evidence | Sanitized screenshots + written validation records |
+| Teardown | Terraform destroy + bounded post-destroy verification |
+| Current Azure State | Validation environment destroyed |
+
+## Table of Contents
+
+- [Solution Architecture](#solution-architecture)
+- [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
+- [Security Engineering Lifecycle](#security-engineering-lifecycle)
+- [Design Principles](#design-principles)
+- [Vulnerable Baseline](#vulnerable-baseline)
+- [Secretless Federation Remediation](#secretless-federation-remediation)
+- [Post-Remediation Validation](#post-remediation-validation)
+- [CI/CD and Repository Hardening](#cicd-and-repository-hardening)
+- [Documentation](#documentation)
+- [Engineering Highlights](#engineering-highlights)
+- [Validation Evidence](#validation-evidence)
+- [Repository Metrics](#repository-metrics)
+- [Project Screenshots](#project-screenshots)
+- [Implementation Roadmap](#implementation-roadmap)
+- [Future Maintenance](#future-maintenance)
+- [Learning Outcomes](#learning-outcomes)
+- [Security and Evidence Hygiene](#security-and-evidence-hygiene)
+- [License](#license)
+- [Author](#author)
+
+## Solution Architecture
+
+The project intentionally uses two security states: a vulnerable baseline and a later secretless validation deployment. They are separate validation windows; the project does not claim in-place replay testing of the retired Phase 3 credential.
+
+```mermaid
+flowchart LR
+    subgraph VULN["Vulnerable Baseline"]
+        A[Controlled attacker session]
+        B[Microsoft Entra service principal]
+        C[Workload resource group]
+        D[Private synthetic storage]
+        E[Negative-control resource group]
+
+        A -->|Copied long-lived credential| B
+        B -->|Excessive bounded RBAC| C
+        B -->|Authorized data access| D
+        B -. Expected denial .-> E
+    end
+
+    subgraph REMED["Secretless Remediated State"]
+        F[GitHub Actions main branch]
+        G[GitHub OIDC token]
+        H[Microsoft Entra federated identity credential]
+        I[Workload service principal]
+        J[Synthetic-data container]
+        K[Management plane / writes / negative control]
+
+        F --> G
+        G --> H
+        H --> I
+        I -->|Storage Blob Data Reader - container scope| J
+        I -. Tested actions explicitly denied .-> K
+    end
+```
+
+Detailed architecture and design records:
 
 - [Architecture index](docs/architecture/README.md)
 - [Phase 1 architecture](docs/architecture/phase-1-architecture.md)
 - [Security decisions](docs/architecture/security-decisions.md)
+- [Workload identity threat model](docs/threat-model/workload-identity-threat-model.md)
 - [Phase 4 remediation](docs/implementation/phase-4-remediation.md)
 
-## Threat Model
+## Technology Stack
 
-The threat model covers credential theft and replay, excessive RBAC, authorization blast radius, trust boundaries, state exposure, federation, least privilege, and evidence safety.
+### Cloud and Identity
 
-- [Threat-model index](docs/threat-model/README.md)
-- [Workload identity threat model](docs/threat-model/workload-identity-threat-model.md)
+| Technology | Purpose |
+| --- | --- |
+| Microsoft Azure | Project-owned cloud validation environment |
+| Microsoft Entra ID | Workload application, service principal, federation |
+| Azure RBAC | Resource-plane authorization |
+| Azure Storage | Private synthetic-data validation target |
+| Azure CLI | Owner-operated and controlled runtime validation |
 
-## Controlled Attack Validation
+### Infrastructure and Automation
 
-Phase 3 validated only known project-owned targets. No arbitrary subscription enumeration, production data access, credential harvesting, destructive operations, or general offensive tooling was in scope.
-
-- **AT-01** — vulnerable credential authentication
-- **AT-02** — workload resource-group enumeration
-- **AT-03** — benign management-plane tag mutation and verified restoration
-- **AT-04** — known synthetic blob access
-- **AT-05** — negative-control access denied
-
-Evidence:
-
-- [Attack-path index](docs/attack-path/README.md)
-- [Phase 1 attack plan](docs/attack-path/phase-1-attack-plan.md)
-- [Phase 3 evidence](docs/evidence/phase-3.md)
-
-## Post-Remediation Validation
-
-Phase 5 separated positive-path access from denial checks and treated ambiguous results conservatively.
-
-Verified outcomes included:
-
-- OIDC authentication succeeded.
-- Intended metadata access to the exact known synthetic blob succeeded.
-- Workload resource-group enumeration was denied.
-- Benign tag mutation was denied.
-- Dedicated synthetic blob creation was denied.
-- Negative-control canary access was denied.
-- Account-level container listing against the known workload storage account was denied.
-- Mutation probes ran separately and session cleanup passed.
-
-These findings demonstrate only the tested authorization behavior. They do not prove universal denial, universal least privilege, or production security.
-
-- [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md)
-
-## Teardown and Cleanup
-
-The later Phase 4/5 validation deployment was destroyed after evidence capture. Bounded post-destroy checks verified:
-
-- empty Terraform state;
-- absence of the exact known workload resource group;
-- absence of the exact known negative-control resource group;
-- absence of the known workload Microsoft Entra application;
-- absence of the known workload service principal;
-- removal of Phase 5 GitHub repository secrets.
-
-- [Phase 7 teardown validation](docs/evidence/phase-7-teardown-validation.md)
-
-## CI/CD and Repository Hardening
-
-Phase 6 adds a static security gate without recreating the Azure environment.
-
-The `Phase 6 Security CI` workflow runs on pull requests and pushes to `main` with explicit `contents: read` permission and three required jobs:
-
-- `terraform-static-validation`
-- `iac-security-scan`
-- `secret-scan`
-
-The Terraform job performs formatting checks, backend-free provider initialization, and configuration validation. Trivy provides IaC and current-content secret scanning. The reviewed lab-specific `AZU-0012` exception remains narrowly scoped and time-bounded.
-
-CF-01 validated the negative path by creating a deliberately misformatted but valid Terraform fixture only under runner temporary storage, proving the formatting gate rejected it, remediating it, revalidating it, cleaning it up, and then intentionally failing the controlled run. The production CI workflow was restored with zero net workflow change.
-
-Repository closeout additionally verified:
-
-- active protection for `main` requiring pull requests and the three CI checks;
-- branch-up-to-date enforcement for required checks;
-- force-push and branch-deletion protection;
-- read-only default GitHub Actions workflow permissions;
-- workflow PR approval disabled;
-- historical Phase 4/5 Azure OIDC workflows disabled without rewriting their YAML provenance;
-- stale historical repository variables removed by name-only cleanup;
-- weekly Dependabot visibility retained while semver-major migrations require explicit compatibility review.
-
-- [Phase 6 CI/CD plan](docs/implementation/phase-6-cicd-security-plan.md)
-- [Phase 6 CI/CD implementation](docs/implementation/phase-6-cicd-security-controls.md)
-- [Phase 6 controlled failure validation](docs/implementation/phase-6-controlled-failure-validation.md)
-- [Phase 6 repository hardening](docs/implementation/phase-6-repository-hardening.md)
-- [Project retrospective](docs/implementation/project-retrospective.md)
-
-## Evidence
-
-Evidence follows a hierarchy of verified outputs, sanitized screenshots, and concise written records. Public evidence excludes credentials, tokens, identifiers, Terraform state/plans, CLI caches, and unnecessary environment details.
-
-- [Evidence index](docs/evidence/README.md)
-- [Evidence plan](docs/evidence/evidence-plan.md)
-- [Phase 2 validation](docs/evidence/phase-2-validation.md)
-- [Phase 3 validation](docs/evidence/phase-3.md)
-- [Phase 4 runtime validation](docs/evidence/phase-4-runtime-validation.md)
-- [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md)
-- [Phase 7 teardown validation](docs/evidence/phase-7-teardown-validation.md)
-- [Phase 2 screenshots](docs/evidence/screenshots/phase-2/)
-- [Phase 3 screenshots](docs/evidence/screenshots/phase-3/)
-- [Phase 4 screenshots](docs/evidence/screenshots/phase-4/)
-- [Phase 5 screenshots](docs/evidence/screenshots/phase-5/)
-- [Phase 7 screenshots](docs/evidence/screenshots/phase-7/)
+| Technology | Purpose |
+| --- | --- |
+| Terraform | Infrastructure and identity configuration |
+| HashiCorp AzureRM | Azure resource-plane resources |
+| HashiCorp AzureAD | Microsoft Entra identity resources |
+| PowerShell | Controlled local validation harnesses |
+| GitHub Actions | Runtime validation history and static security CI |
+| GitHub OIDC | Short-lived external workload authentication |
+| Trivy | IaC misconfiguration and current-content secret scanning |
 
 ## Repository Structure
 
 ```text
-.github/                  Static security CI, Dependabot policy, historical OIDC workflows
-docs/
-  architecture/           Architecture and security decisions
-  attack-path/            Controlled attack plans and validation design
-  evidence/               Validation records and sanitized screenshots
-  implementation/         Phase implementation, hardening, and retrospective records
-  threat-model/           Threat-model documentation
-scripts/                  Local validation and historical bounded test harnesses
-terraform/                Validated Terraform source baseline
-README.md                 Project entry point
-LICENSE                   Project license
+AZ-01-azure-workload-identity-security-lab/
+│
+├── .github/
+│   ├── workflows/
+│   │   ├── phase-4-oidc-validation.yml
+│   │   ├── phase-5-oidc-validation.yml
+│   │   └── security-ci.yml
+│   └── dependabot.yml
+│
+├── docs/
+│   ├── architecture/
+│   ├── attack-path/
+│   ├── assets/
+│   ├── evidence/
+│   │   └── screenshots/
+│   ├── implementation/
+│   └── threat-model/
+│
+├── scripts/
+│   ├── attack-tests.ps1
+│   ├── phase-5-owner-preflight.ps1
+│   ├── validate-phase2.ps1
+│   └── validate.ps1
+│
+├── terraform/
+│   ├── identity.tf
+│   ├── rbac.tf
+│   ├── storage.tf
+│   ├── negative-control.tf
+│   ├── outputs.tf
+│   ├── variables.tf
+│   └── versions.tf
+│
+├── .gitignore
+├── .trivyignore.yaml
+├── LICENSE
+└── README.md
 ```
 
-Documentation indexes: [docs](docs/README.md), [architecture](docs/architecture/README.md), [attack path](docs/attack-path/README.md), [evidence](docs/evidence/README.md), [implementation](docs/implementation/README.md), [threat model](docs/threat-model/README.md), [scripts](scripts/README.md), [Terraform](terraform/README.md), and [.github](.github/README.md).
+## Security Engineering Lifecycle
 
-## Technology Stack
-
-- Terraform `>= 1.10.0`
-- HashiCorp AzureRM, AzureAD, and Random providers
-- Microsoft Azure and Microsoft Entra ID
-- Azure RBAC
-- Azure Storage with synthetic data only
-- GitHub Actions
-- GitHub OIDC / Microsoft Entra workload identity federation
-- Azure CLI for owner-operated validation windows
-- PowerShell
-- Trivy for IaC and current-content secret scanning
-
-## Reproducing the Lab
-
-The repository preserves the implementation and evidence, but **no live AZ-01 Azure validation environment currently exists**. Any future replay should be treated as a new controlled validation window and must re-review provider compatibility, the time-bounded Trivy exception, Azure authorization scope, current GitHub settings, and evidence-sanitization requirements before deployment.
-
-For an authorized replay, see:
-
-- [Terraform guide](terraform/README.md)
-- [Script guide](scripts/README.md)
-- [Security decisions](docs/architecture/security-decisions.md)
-
-## Engineering Workflow
+The engineering workflow used throughout the project was:
 
 ```text
-CREATE → Terraform apply → validate → capture evidence
-       → inject controlled attack/failure
-       → investigate → remediate → revalidate → capture evidence
-       → Terraform destroy → verify cleanup
-       → harden CI/repository controls → close out
+CREATE
+  ↓
+Terraform apply
+  ↓
+Validate
+  ↓
+Capture evidence
+  ↓
+Inject controlled attack / failure
+  ↓
+Investigate
+  ↓
+Remediate
+  ↓
+Revalidate
+  ↓
+Capture remediation evidence
+  ↓
+Terraform destroy
+  ↓
+Verify cleanup
 ```
 
-This workflow intentionally separates build, validation, controlled failure, remediation, cleanup, and evidence review.
+This separates infrastructure creation, attack validation, remediation, evidence review, and teardown into explicit engineering stages.
+
+## Design Principles
+
+The repository follows these security-engineering principles:
+
+- Infrastructure as Code as the source of truth
+- Synthetic data only
+- Project-owned test targets only
+- Bounded blast radius
+- Authentication and authorization separation
+- Principle of least privilege
+- Positive and negative security controls
+- Explicit authorization-denial classification
+- Evidence before claims
+- No production/customer data
+- No arbitrary subscription enumeration
+- Complete resource lifecycle management
+- Cost-conscious teardown
+- Protected source baseline
+
+## Vulnerable Baseline
+
+The vulnerable phase intentionally used a temporary long-lived Microsoft Entra service-principal credential with excessive but project-bounded Azure RBAC.
+
+### Controlled Attack Matrix
+
+| Test | Validation | Result |
+| --- | --- | --- |
+| AT-01 | Vulnerable workload credential authentication | PASS |
+| AT-02 | Workload resource-group enumeration | PASS |
+| AT-03 | Benign management-plane tag mutation + restoration | PASS |
+| AT-04 | Known synthetic blob access | PASS |
+| AT-05 | Project-owned negative-control access | DENIED as expected |
+
+The negative control is important: it demonstrates that successful credential compromise did not imply access to every project-owned target.
+
+Detailed evidence:
+
+- [Attack-path plan](docs/attack-path/phase-1-attack-plan.md)
+- [Phase 3 evidence](docs/evidence/phase-3.md)
+
+## Secretless Federation Remediation
+
+The later remediation deployment replaced the persistent workload-secret architecture with short-lived federation.
+
+```text
+GitHub Actions
+      ↓
+GitHub-issued OIDC token
+      ↓
+Microsoft Entra federated identity credential
+      ↓
+Workload service principal
+      ↓
+Azure RBAC
+      ↓
+Exact synthetic-data container scope
+```
+
+### Security Changes
+
+| Control Area | Vulnerable State | Remediated State |
+| --- | --- | --- |
+| Workload authentication | Long-lived client secret | GitHub OIDC federation |
+| Credential storage | Replayable persistent credential existed for lab validation | No persistent Azure workload client secret |
+| Azure authorization | Excessive workload-RG permissions | Container-scoped `Storage Blob Data Reader` |
+| Negative control | No role assignment | No role assignment retained |
+| Trust boundary | Credential possession | Exact reviewed GitHub OIDC trust tuple |
+
+OIDC addresses **credential lifecycle and authentication risk**. Azure RBAC scope reduction addresses **authorization blast radius**. Both controls are required.
+
+## Post-Remediation Validation
+
+The project did not stop after changing Terraform. Phase 5 executed bounded runtime checks against the remediated workload identity.
+
+| Test | Tested behavior | Observed result |
+| --- | --- | --- |
+| RT-01 | GitHub OIDC authentication + intended Azure context | PASS |
+| RT-02 | Workload resource-group enumeration | Explicitly denied |
+| RT-03 | Benign management-plane tag mutation | Explicitly denied |
+| RT-04R | Known synthetic blob metadata/read path | PASS |
+| RT-04W | Dedicated synthetic blob creation/write | Explicitly denied |
+| RT-05 | Negative-control canary access | Explicitly denied |
+| RT-06 | Account-level container listing | Explicitly denied |
+| Cleanup | Workload CLI session/profile cleanup | PASS |
+
+These observations apply only to the tested actions and known project-owned targets. They do not prove universal denial or universal least privilege.
+
+- [Phase 4 runtime validation](docs/evidence/phase-4-runtime-validation.md)
+- [Phase 5 runtime validation](docs/evidence/phase-5-runtime-validation.md)
+
+## CI/CD and Repository Hardening
+
+Phase 6 protects the validated source baseline without recreating the Azure environment.
+
+### Required Security CI Jobs
+
+| Job | Purpose |
+| --- | --- |
+| `terraform-static-validation` | Terraform formatting, backend-free initialization, and validation |
+| `iac-security-scan` | Trivy Terraform misconfiguration scan |
+| `secret-scan` | Trivy current-repository-content secret scan |
+
+The CI workflow uses explicit `contents: read` permission and does **not** authenticate to Azure, request OIDC `id-token`, run Terraform plan/apply/destroy, or mutate cloud infrastructure.
+
+### Controlled Failure Validation
+
+CF-01 created a deliberately misformatted but valid Terraform fixture only in runner temporary storage. The production formatting gate rejected the fixture, accepted the remediated format, cleaned up the temporary file, and then intentionally failed the controlled validation run. The production CI workflow was restored with zero net workflow change.
+
+### Repository Controls
+
+- Pull requests required for `main`
+- Three security CI jobs required
+- Required checks use up-to-date branch state
+- Force-push protection
+- Branch-deletion protection
+- Read-only default GitHub Actions workflow permissions
+- Historical Phase 4/5 Azure OIDC workflows disabled after evidence capture
+- Historical repository variables/secrets cleaned up after teardown
+- Weekly Dependabot visibility retained
+- Major dependency/provider upgrades require explicit compatibility review
+
+Documentation:
+
+- [Phase 6 CI/CD plan](docs/implementation/phase-6-cicd-security-plan.md)
+- [Phase 6 CI/CD implementation](docs/implementation/phase-6-cicd-security-controls.md)
+- [Controlled failure validation](docs/implementation/phase-6-controlled-failure-validation.md)
+- [Repository hardening](docs/implementation/phase-6-repository-hardening.md)
+- [Project retrospective](docs/implementation/project-retrospective.md)
+
+## Documentation
+
+The repository preserves technical documentation for architecture, threat modeling, implementation, validation, evidence, teardown, and project closeout.
+
+| Documentation Area | Description | Link |
+| --- | --- | --- |
+| Architecture | System design and security decisions | [Architecture](docs/architecture/README.md) |
+| Threat Model | Credential, RBAC, federation, and trust-boundary analysis | [Threat Model](docs/threat-model/README.md) |
+| Attack Path | Controlled attack design and post-remediation plan | [Attack Path](docs/attack-path/README.md) |
+| Evidence | Phase-wise validation records and screenshots | [Evidence](docs/evidence/README.md) |
+| Implementation | Remediation, CI/CD, hardening, retrospective | [Implementation](docs/implementation/README.md) |
+| Scripts | Controlled validation harness documentation | [Scripts](scripts/README.md) |
+| Terraform | Infrastructure and replay guidance | [Terraform](terraform/README.md) |
+| GitHub | Workflow and repository-control documentation | [.github](.github/README.md) |
+
+## Engineering Highlights
+
+This project demonstrates practical experience with:
+
+- Azure workload identity security
+- Microsoft Entra application and service-principal architecture
+- GitHub OIDC federation
+- Azure RBAC least-privilege design
+- Terraform identity and resource-plane separation
+- Controlled credential-compromise validation
+- Positive and negative authorization testing
+- Security test classification
+- Infrastructure teardown verification
+- GitHub Actions least-privilege design
+- IaC security scanning
+- Secret scanning
+- Controlled CI failure injection
+- Protected-main repository governance
+- Evidence-driven technical documentation
+
+## Validation Evidence
+
+Evidence was captured after controlled validation steps and sanitized before publication. Raw authentication logs, credential values, Terraform state, and sensitive Azure identifiers are not preserved as public evidence.
+
+| Evidence Phase | Coverage |
+| --- | --- |
+| Phase 2 | Infrastructure deployment and baseline validation |
+| Phase 3 | Vulnerable credential-compromise attack validation |
+| Phase 4 | GitHub OIDC positive-path runtime validation |
+| Phase 5 | Post-remediation positive and denial testing |
+| Phase 7 | Terraform destroy and bounded cleanup verification |
+
+Evidence index:
+
+- [Phase 2 validation](docs/evidence/phase-2-validation.md)
+- [Phase 3 attack validation](docs/evidence/phase-3.md)
+- [Phase 4 OIDC runtime validation](docs/evidence/phase-4-runtime-validation.md)
+- [Phase 5 post-remediation validation](docs/evidence/phase-5-runtime-validation.md)
+- [Phase 7 teardown validation](docs/evidence/phase-7-teardown-validation.md)
+
+## Repository Metrics
+
+| Metric | Count / State |
+| --- | ---: |
+| Cloud Providers | 1 — Microsoft Azure |
+| Project Phases | 8 — Phase 0 through Phase 7 |
+| Controlled Attack Tests | 5 — AT-01 through AT-05 |
+| Post-Remediation Runtime Cases | 7 — RT-01, RT-02, RT-03, RT-04R, RT-04W, RT-05, RT-06 |
+| Required Security CI Jobs | 3 |
+| Evidence Screenshot Phases | 5 |
+| Main Branch Protection | Enabled |
+| Azure Validation Environment | Destroyed |
+| Long-Lived Workload Secret | Not recreated |
+| Historical Azure OIDC Validation Workflows | Disabled |
+
+## Project Screenshots
+
+The following sanitized screenshots represent key stages of the security lifecycle.
+
+| Vulnerable Credential Authentication | Negative-Control Denial |
+| --- | --- |
+| ![](docs/evidence/screenshots/phase-3/AT-01-exposed-credential-authentication.png) | ![](docs/evidence/screenshots/phase-3/AT-05-negative-control-denied.png) |
+
+**Figure 1:** Controlled vulnerable workload credential authentication.
+
+**Figure 2:** Project-owned negative-control access denied as expected.
+
+| GitHub OIDC Runtime Validation | Post-Remediation Validation |
+| --- | --- |
+| ![](docs/evidence/screenshots/phase-4/01-oidc-workflow-success.png) | ![](docs/evidence/screenshots/phase-5/01-non-mutating-validation-pass.png) |
+
+**Figure 3:** Secretless GitHub OIDC runtime validation completed successfully.
+
+**Figure 4:** Non-mutating post-remediation validation of intended access and tested denial boundaries.
+
+| Management-Plane Mutation Denied | Terraform Teardown |
+| --- | --- |
+| ![](docs/evidence/screenshots/phase-5/02-rt03-management-plane-mutation-denied.png) | ![](docs/evidence/screenshots/phase-7/01-terraform-destroy-complete.png) |
+
+**Figure 5:** Reviewed benign management-plane mutation received explicit authorization denial.
+
+**Figure 6:** Terraform destroy completed for the later validation deployment.
+
+## Implementation Roadmap
+
+### Completed
+
+- Phase 0 — Repository and Azure connectivity foundation
+- Phase 1 — Architecture and threat modeling
+- Phase 2 — Vulnerable workload identity infrastructure
+- Phase 3 — Controlled credential-compromise validation
+- Phase 4 — GitHub OIDC and least-privilege remediation
+- Phase 5 — Post-remediation re-attack validation
+- Phase 6 — Static security CI and repository hardening
+- Phase 7 — Teardown, cleanup verification, and retrospective
+
+### Final Project State
+
+```text
+Vulnerable baseline: COMPLETE
+OIDC remediation: COMPLETE
+Post-remediation runtime validation: COMPLETE
+Static security CI: COMPLETE
+Controlled CI failure validation: COMPLETE
+Repository hardening: COMPLETE
+Teardown verification: COMPLETE
+Project retrospective: COMPLETE
+Azure validation environment: DESTROYED
+Historical OIDC workflows: DISABLED
+Long-lived workload client secret: NOT RECREATED
+```
+
+## Future Maintenance
+
+The implementation is closed as a validated lab baseline. Future work should focus on maintenance rather than expanding old runtime claims.
+
+- Review Terraform provider compatibility before any future replay.
+- Review the time-bounded Trivy `AZU-0012` exception before expiration or redeployment.
+- Revalidate GitHub OIDC and Azure behavior if the lab is rebuilt in a new validation window.
+- Keep dependency updates behind protected-main CI.
+- Continue excluding credentials, state, plans, raw authentication logs, and sensitive runtime identifiers from public evidence.
+
+## Learning Outcomes
+
+- Workload credential compromise and replay risk
+- Microsoft Entra service-principal security
+- GitHub OIDC workload federation
+- Authentication vs authorization separation
+- Azure RBAC scope reduction
+- Negative-control security testing
+- Explicit denial classification
+- Terraform-based security architecture
+- Runtime validation after remediation
+- Secure evidence handling
+- Resource teardown verification
+- Static DevSecOps security gates
+- CI negative-path testing
+- Protected repository governance
 
 ## Security and Evidence Hygiene
 
-Never commit client secrets, access tokens, refresh tokens, Terraform state, tfplan files, Azure CLI caches, `.env` secrets, subscription IDs, tenant IDs, application/client IDs, object/principal IDs, or unsanitized runtime evidence.
+Never commit or publish:
 
-Historical validation workflows remain in source control for provenance but are disabled. Re-enabling them requires a new explicit authorization and review cycle.
+- Azure client secrets
+- access or refresh tokens
+- Terraform state or plan files
+- Azure CLI caches
+- `.env` credential material
+- tenant/subscription/application/object/principal identifier values in public runtime evidence
+- raw authentication logs
+- production/customer/personal data
 
-## Cost Control
+The exact GitHub OIDC issuer/audience/subject trust tuple is retained as **public, non-secret configuration metadata** in the Terraform and architecture decision record. It is not a credential and cannot independently authenticate to Microsoft Entra.
 
-The lab avoids VM-heavy architecture and uses small synthetic resources only. Infrastructure existed only during controlled validation windows and was destroyed after testing. This repository does not publish fabricated cost estimates.
+Historical Phase 4/5 runtime workflows remain in source control for provenance but are disabled. Re-enabling them requires a new explicit validation and review cycle.
 
-## Project Phases
+## License
 
-| Phase | Status |
-| --- | --- |
-| 0 — Repository/Azure connectivity | Complete |
-| 1 — Architecture/threat modeling | Complete |
-| 2 — Vulnerable identity infrastructure | Complete |
-| 3 — Credential-compromise validation | Complete |
-| 4 — GitHub OIDC + least privilege | Complete |
-| 5 — Re-attack/security validation | Complete |
-| 6 — CI/CD security controls and repository hardening | Complete |
-| 7 — Evidence, teardown, cleanup, and retrospective | Complete |
+This project is licensed under the MIT License.
 
-## Final Project State
+See the [LICENSE](LICENSE) file for additional information.
 
-```text
-Phase 3 vulnerable baseline: COMPLETE
-Phase 4 OIDC remediation/runtime validation: COMPLETE
-Phase 5 post-remediation validation: COMPLETE
-Phase 6 static CI + controlled failure + repository hardening: COMPLETE
-Phase 7 teardown/cleanup verification: COMPLETE
-Project retrospective: COMPLETE
-Current AZ-01 Azure validation environment: DESTROYED
-Historical Azure OIDC validation workflows: DISABLED
-Long-lived client secret: NOT RECREATED
-```
+## Author
 
-AZ-01 is now closed as a **synthetic, evidence-driven cloud-security lab**. Future maintenance or redeployment should start from the preserved evidence and validated source baseline, not assume the 2026 runtime results still represent current Azure, provider, or GitHub behavior.
+**Surya**
+
+Cloud Security Engineer | Azure | AWS | Terraform | DevSecOps | IAM
+
+[![GitHub](https://img.shields.io/badge/GitHub-nagasesank-181717?logo=github&logoColor=white)](https://github.com/nagasesank)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Surya%20Sesank-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/suryasesank/)
+
+## Acknowledgements
+
+This project was built as a hands-on cloud-security engineering portfolio case study to demonstrate the complete lifecycle of workload identity risk analysis, controlled attack validation, secretless federation, least-privilege remediation, post-remediation verification, teardown, and DevSecOps hardening.
+
+<p align="center">
+
+Built with Terraform, Microsoft Azure, Microsoft Entra ID, GitHub OIDC, GitHub Actions, PowerShell, and evidence-driven security engineering.
+
+</p>
