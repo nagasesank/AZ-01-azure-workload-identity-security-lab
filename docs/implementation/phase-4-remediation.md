@@ -20,7 +20,7 @@ The workload application and service principal have no application password. Git
 - Audience: Microsoft Entra token exchange.
 - Subject: this repository's immutable owner/repository identity and the `main` branch.
 
-Literal owner, repository, tenant, subscription, application, object, principal, and resource identifiers are intentionally excluded from public documentation.
+Azure tenant, subscription, application, object, principal, credential, token, and other sensitive runtime values are intentionally excluded from public evidence. The GitHub OIDC trust tuple itself is intentionally preserved in Terraform and the architecture decision record because it is non-secret trust configuration required to reproduce and review the federation boundary.
 
 The workload receives only `Storage Blob Data Reader` at the known synthetic-data container Resource Manager scope. Terraform defines no Contributor, management-plane Reader, storage write, storage owner, or negative-control resource-group role assignment for the workload identity.
 
