@@ -477,7 +477,7 @@ The repository preserves technical documentation for architecture, threat modeli
 | Implementation | Remediation, CI/CD, hardening, retrospective | [Implementation](docs/implementation/README.md) |
 | Scripts | Controlled validation harness documentation | [Scripts](scripts/README.md) |
 | Terraform | Infrastructure and replay guidance | [Terraform](terraform/README.md) |
-| GitHub | Workflow and repository-control documentation | [.github](.github/README.md) |
+| GitHub | Workflow and repository-control files | [.github/](.github/) |
 
 ## Engineering Highlights
 
